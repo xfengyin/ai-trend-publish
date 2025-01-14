@@ -146,9 +146,16 @@ export class WeixinWorkflow {
       );
       summaryProgress.start(allContents.length, 0);
 
-      for (let i = 0; i < allContents.length; i++) {
-        await this.processContent(allContents[i]);
-        summaryProgress.update(i + 1);
+      // 批量处理内容
+      const batchSize = 10;
+      for (let i = 0; i < allContents.length; i += batchSize) {
+        const batch = allContents.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (content) => {
+            await this.processContent(content);
+            summaryProgress.increment();
+          })
+        );
       }
       summaryProgress.stop();
 
@@ -164,12 +171,19 @@ export class WeixinWorkflow {
         keywords: content.metadata.keywords,
       }));
 
+      // 将所有标题总结成一个标题，然后让AI生成一个最具有吸引力的标题
+      const summaryTitle = await this.summarizer.generateTitle(
+        allContents.map((content) => content.title).join(" | ")
+      );
+
+      console.log(`[标题生成] 生成标题: ${summaryTitle}`);
+
       const renderedTemplate = this.renderer.render(templateData);
       console.log("[发布] 发布到微信公众号");
       const publishResult = await this.publisher.publish(
         renderedTemplate,
-        `今日AI热点 - ${new Date().toLocaleDateString()}`,
-        "今日AI热点"
+        `${new Date().toLocaleDateString()} AI速递 | ${summaryTitle}`,
+        summaryTitle
       );
 
       // 5. 完成报告

@@ -6,6 +6,7 @@ import {
 import dotenv from "dotenv";
 import { z } from "zod";
 import FirecrawlApp from "firecrawl";
+import { formatDate } from "../utils/common";
 
 dotenv.config();
 
@@ -69,7 +70,7 @@ export class FireCrawlScraper implements ContentScraper {
               "headline": "headline1",
               "content":"content1"
               "link": "link1",
-              "date_posted": "YYYY-MM-DD"
+              "date_posted": "YYYY-MM-DD HH:mm:ss"
             },
             ...
           ]
@@ -100,12 +101,15 @@ export class FireCrawlScraper implements ContentScraper {
       const validatedData = StoriesSchema.parse(scrapeResult.extract);
 
       // 转换为 ScrapedContent 格式
+      console.log(
+        `[FireCrawl] 从 ${sourceId} 获取到 ${validatedData.stories.length} 条内容`
+      );
       return validatedData.stories.map((story) => ({
         id: this.generateId(story.link),
         title: story.headline,
         content: story.content,
         url: story.link,
-        publishDate: new Date(story.date_posted),
+        publishDate: formatDate(story.date_posted),
         metadata: {
           source: "fireCrawl",
           originalUrl: story.link,

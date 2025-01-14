@@ -6,6 +6,7 @@ import {
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
+import { formatDate } from "../utils/common";
 
 dotenv.config();
 
@@ -23,14 +24,6 @@ export class TwitterScraper implements ContentScraper {
         "X API Bearer Token is not set, please set X_API_BEARER_TOKEN in .env file"
       );
     }
-  }
-
-  formatDate(dateString: string) {
-    const date = new Date(Date.parse(dateString.replace(/(\+\d{4})/, "UTC$1")));
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}/${month}/${day}`;
   }
 
   async scrape(
@@ -70,7 +63,7 @@ export class TwitterScraper implements ContentScraper {
           title: tweet.text.split("\n")[0],
           content: tweet.text,
           url: `https://x.com/${username}/status/${tweet.id}`,
-          publishDate: this.formatDate(tweet.createdAt),
+          publishDate: formatDate(tweet.createdAt),
           metadata: {
             platform: "twitter",
             username,

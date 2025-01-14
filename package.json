@@ -5,9 +5,7 @@
   "scripts": {
     "start": "nodemon src/index.ts",
     "build": "tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "nodemon src/test.ts"
   },
   "author": "",
   "license": "ISC",

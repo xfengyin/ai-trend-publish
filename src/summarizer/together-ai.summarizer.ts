@@ -84,4 +84,11 @@ export class TogetherAISummarizer implements ContentSummarizer {
       throw error;
     }
   }
+
+  async generateTitle(
+    content: string,
+    options?: Record<string, any>
+  ): Promise<string> {
+    return "test";
+  }
 }
