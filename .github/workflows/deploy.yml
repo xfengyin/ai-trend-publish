@@ -36,39 +36,30 @@ jobs:
           EOL
 
       - name: Setup SSH # 设置 SSH
-        env:
-          SSH_USER: ${{ secrets.SERVER_USER }}
-          SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Test SSH Connection # 测试 SSH 连接
-        env:
-          SSH_USER: ${{ secrets.SERVER_USER }}
-          SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          ssh -i ~/.ssh/id_rsa -v $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"
+          echo "Testing SSH connection..."
+          echo "Server: ${{ secrets.SERVER_HOST }}"
+          echo "User: ${{ secrets.SERVER_USER }}"
+          ssh -i ~/.ssh/id_rsa "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" echo "SSH connection successful"
 
       - name: Package Files # 打包文件
         run: |
           tar -czf build.tar.gz dist package*.json .env
 
       - name: Upload to Server # 上传到服务器
-        env:
-          SSH_USER: ${{ secrets.SERVER_USER }}
-          SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          scp -i ~/.ssh/id_rsa build.tar.gz $SSH_USER@$SSH_HOST:~/app/
+          scp -i ~/.ssh/id_rsa build.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/app/"
 
       - name: Deploy on Server # 在服务器上部署
-        env:
-          SSH_USER: ${{ secrets.SERVER_USER }}
-          SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd ~/app && \
+          ssh -i ~/.ssh/id_rsa "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "cd ~/app && \
             tar -xzf build.tar.gz && \
             npm ci --production && \
             pm2 delete trend-finder || true && \
