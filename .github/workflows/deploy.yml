@@ -24,14 +24,6 @@ jobs:
       - name: Build # 构建项目
         run: npm run build
 
-      - name: Install sshpass # 安装 sshpass 用于自动化 SSH 操作
-        run: sudo apt-get install -y sshpass
-
-      - name: Add known hosts # 添加服务器到已知主机列表，避免 SSH 警告
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-
       - name: Create .env file # 创建环境配置文件
         run: |
           cat > .env << EOL
@@ -43,22 +35,25 @@ jobs:
           DB_DATABASE=${{ secrets.DB_DATABASE }}
           EOL
 
+      - name: Setup SSH # 设置 SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy to server # 部署到服务器
-        env:
-          SSHPASS: ${{ secrets.SERVER_PASSWORD }} # 设置 SSH 密码
         run: |
           # 打包构建文件
           tar -czf build.tar.gz dist package*.json .env
 
-          # 使用 sshpass 将文件复制到服务器
-          sshpass -e scp build.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/app/
-
-          # 通过 SSH 在服务器上执行命令
-          sshpass -e ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
+          # 部署到服务器
+          scp build.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/app/
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
             cd ~/app
-            tar -xzf build.tar.gz  # 解压文件
-            npm ci --production    # 安装生产环境依赖
-            pm2 delete trend-finder || true  # 停止旧的进程（如果存在）
-            pm2 start dist/index.js --name trend-finder  # 启动新的进程
-            rm build.tar.gz  # 清理临时文件
+            tar -xzf build.tar.gz
+            npm ci --production
+            pm2 delete trend-finder || true
+            pm2 start dist/index.js --name trend-finder
+            rm build.tar.gz
           '
