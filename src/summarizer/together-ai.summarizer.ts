@@ -1,16 +1,21 @@
 import Together from "together-ai";
 import { ContentSummarizer, Summary } from "./interfaces/summarizer.interface";
+import { ConfigManager } from "../utils/config/config-manager";
 
 export class TogetherAISummarizer implements ContentSummarizer {
-  private together: Together;
+  private together!: Together;
 
   constructor() {
-    this.validateConfig();
+    this.refresh();
+  }
+
+  async refresh(): Promise<void> {
+    await this.validateConfig();
     this.together = new Together();
   }
 
-  validateConfig(): void {
-    if (!process.env.TOGETHER_API_KEY) {
+  async validateConfig(): Promise<void> {
+    if (!(await ConfigManager.getInstance().get("TOGETHER_API_KEY"))) {
       throw new Error("TOGETHER_API_KEY is not set");
     }
   }

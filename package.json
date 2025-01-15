@@ -30,12 +30,15 @@
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "firecrawl": "^1.7.2",
+    "mysql2": "^3.12.0",
     "node-cron": "^3.0.3",
     "openai": "^4.72.0",
     "playht": "^0.13.0",
+    "reflect-metadata": "^0.2.2",
     "resend": "^4.0.1-alpha.0",
     "together-ai": "^0.9.0",
     "trend-finder": "file:",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typeorm": "^0.3.20"
   }
 }

@@ -1,58 +1,77 @@
-import dotenv from "dotenv";
+import { ConfigManager } from "../utils/config/config-manager";
+import { EnvConfigSource } from "../utils/config/sources/env-config.source";
+import { MySQLDB } from "../utils/db/mysql.db";
 
-dotenv.config();
+export type NewsType = "AI" | "Tech" | "Crypto" | "All";
+export type NewsPlatform = "firecrawl" | "twitter";
 
-type NewsType = "AI" | "Tech" | "Crypto" | "All";
+interface SourceItem {
+  identifier: string;
+}
 
-// 将源配置分类存储
-export const sourceConfigs = {
+interface PlatformSources {
+  firecrawl: SourceItem[];
+  twitter: SourceItem[];
+}
+
+type SourceConfig = Record<NewsType, PlatformSources>;
+
+interface CronSource {
+  id: number;
+  NewsType: NewsType;
+  NewsPlatform: NewsPlatform;
+  identifier: string;
+}
+
+// 本地源配置
+export const sourceConfigs: SourceConfig = {
   AI: {
     firecrawl: [
       { identifier: "https://www.firecrawl.dev/blog" },
-      { identifier: "https://ai-bot.cn/daily-ai-news/" },
-      { identifier: "https://www.anthropic.com/news" },
-      { identifier: "https://news.ycombinator.com/" },
-      {
-        identifier:
-          "https://www.reuters.com/technology/artificial-intelligence/",
-      },
-      { identifier: "https://simonwillison.net/" },
-      { identifier: "https://buttondown.com/ainews/archive/" },
+      // { identifier: "https://ai-bot.cn/daily-ai-news/" },
+      // { identifier: "https://www.anthropic.com/news" },
+      // { identifier: "https://news.ycombinator.com/" },
+      // {
+      //   identifier:
+      //     "https://www.reuters.com/technology/artificial-intelligence/",
+      // },
+      // { identifier: "https://simonwillison.net/" },
+      // { identifier: "https://buttondown.com/ainews/archive/" },
     ],
     twitter: [
       { identifier: "https://x.com/HumansNoContext" },
       // Official AI Companies
-      { identifier: "https://x.com/OpenAIDevs" },
-      { identifier: "https://x.com/xai" },
-      { identifier: "https://x.com/alexalbert__" },
-      { identifier: "https://x.com/leeerob" },
-      { identifier: "https://x.com/v0" },
-      { identifier: "https://x.com/aisdk" },
-      { identifier: "https://x.com/firecrawl_dev" },
-      { identifier: "https://x.com/AIatMeta" },
-      { identifier: "https://x.com/googleaidevs" },
-      { identifier: "https://x.com/MistralAI" },
-      { identifier: "https://x.com/Cohere" },
-      { identifier: "https://x.com/karpathy" },
-      { identifier: "https://x.com/ylecun" },
-      { identifier: "https://x.com/sama" },
-      { identifier: "https://x.com/EMostaque" },
-      { identifier: "https://x.com/DrJimFan" },
-      { identifier: "https://x.com/nickscamara_" },
-      { identifier: "https://x.com/CalebPeffer" },
-      { identifier: "https://x.com/akshay_pachaar" },
-      { identifier: "https://x.com/ericciarla" },
-      { identifier: "https://x.com/amasad" },
-      { identifier: "https://x.com/nutlope" },
-      { identifier: "https://x.com/rauchg" },
-      { identifier: "https://x.com/vercel" },
-      { identifier: "https://x.com/LangChainAI" },
-      { identifier: "https://x.com/llama_index" },
-      { identifier: "https://x.com/pinecone" },
-      { identifier: "https://x.com/modal_labs" },
-      { identifier: "https://x.com/huggingface" },
-      { identifier: "https://x.com/weights_biases" },
-      { identifier: "https://x.com/replicate" },
+      // { identifier: "https://x.com/OpenAIDevs" },
+      // { identifier: "https://x.com/xai" },
+      // { identifier: "https://x.com/alexalbert__" },
+      // { identifier: "https://x.com/leeerob" },
+      // { identifier: "https://x.com/v0" },
+      // { identifier: "https://x.com/aisdk" },
+      // { identifier: "https://x.com/firecrawl_dev" },
+      // { identifier: "https://x.com/AIatMeta" },
+      // { identifier: "https://x.com/googleaidevs" },
+      // { identifier: "https://x.com/MistralAI" },
+      // { identifier: "https://x.com/Cohere" },
+      // { identifier: "https://x.com/karpathy" },
+      // { identifier: "https://x.com/ylecun" },
+      // { identifier: "https://x.com/sama" },
+      // { identifier: "https://x.com/EMostaque" },
+      // { identifier: "https://x.com/DrJimFan" },
+      // { identifier: "https://x.com/nickscamara_" },
+      // { identifier: "https://x.com/CalebPeffer" },
+      // { identifier: "https://x.com/akshay_pachaar" },
+      // { identifier: "https://x.com/ericciarla" },
+      // { identifier: "https://x.com/amasad" },
+      // { identifier: "https://x.com/nutlope" },
+      // { identifier: "https://x.com/rauchg" },
+      // { identifier: "https://x.com/vercel" },
+      // { identifier: "https://x.com/LangChainAI" },
+      // { identifier: "https://x.com/llama_index" },
+      // { identifier: "https://x.com/pinecone" },
+      // { identifier: "https://x.com/modal_labs" },
+      // { identifier: "https://x.com/huggingface" },
+      // { identifier: "https://x.com/weights_biases" },
+      // { identifier: "https://x.com/replicate" },
     ],
   },
   Tech: {
@@ -63,4 +82,57 @@ export const sourceConfigs = {
     firecrawl: [],
     twitter: [],
   },
+  All: {
+    firecrawl: [],
+    twitter: [],
+  },
+} as const;
+
+export const getCronSources = async (): Promise<SourceConfig> => {
+  const configManager = ConfigManager.getInstance();
+  configManager.addSource(new EnvConfigSource());
+  try {
+    const mysql = await MySQLDB.getInstance({
+      host: await configManager.get("DB_HOST"),
+      port: await configManager.get("DB_PORT"),
+      user: await configManager.get("DB_USER"),
+      password: await configManager.get("DB_PASSWORD"),
+      database: await configManager.get("DB_DATABASE"),
+    });
+    const dbSources = await mysql.query<CronSource>(
+      "SELECT * FROM cron_sources"
+    );
+
+    // 如果成功获取数据库数据，合并本地和数据库数据
+    const mergedSources = { ...sourceConfigs };
+
+    // 遍历数据库数据并合并到本地配置中
+    if (Array.isArray(dbSources)) {
+      for (const source of dbSources) {
+        const { NewsType, NewsPlatform, identifier } = source;
+        const newsTypeKey = NewsType as keyof SourceConfig;
+        const platformKey = NewsPlatform as keyof PlatformSources;
+
+        if (
+          newsTypeKey in mergedSources &&
+          platformKey in mergedSources[newsTypeKey]
+        ) {
+          const platform = mergedSources[newsTypeKey][platformKey];
+          // 检查是否已存在相同的identifier
+          const exists = platform.some(
+            (item) => item.identifier === identifier
+          );
+          if (!exists) {
+            platform.push({ identifier });
+          }
+        }
+      }
+    }
+
+    return mergedSources;
+  } catch (error) {
+    console.error("Failed to get cron sources from database:", error);
+    // 数据库不可用时返回本地配置
+    return sourceConfigs;
+  }
 };

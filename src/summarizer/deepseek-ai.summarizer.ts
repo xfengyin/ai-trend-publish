@@ -1,20 +1,25 @@
 import { OpenAI } from "openai";
 import { ContentSummarizer, Summary } from "./interfaces/summarizer.interface";
+import { ConfigManager } from "../utils/config/config-manager";
 
 export class DeepseekAISummarizer implements ContentSummarizer {
-  private client: OpenAI;
+  private client!: OpenAI;
   private readonly model: string = "deepseek-chat";
 
   constructor() {
-    this.validateConfig();
+    this.refresh();
+  }
+
+  async refresh(): Promise<void> {
+    await this.validateConfig();
     this.client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY,
+      apiKey: await ConfigManager.getInstance().get("DEEPSEEK_API_KEY"),
       baseURL: "https://api.deepseek.com",
     });
   }
 
-  validateConfig(): void {
-    if (!process.env.DEEPSEEK_API_KEY) {
+  async validateConfig(): Promise<void> {
+    if (!(await ConfigManager.getInstance().get("DEEPSEEK_API_KEY"))) {
       throw new Error("DeepSeek API key is required");
     }
   }

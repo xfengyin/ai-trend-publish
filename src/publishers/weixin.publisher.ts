@@ -5,6 +5,7 @@ import {
 import dotenv from "dotenv";
 import axios from "axios";
 import { WeixinTemplate } from "../templates/interfaces/template.interface";
+import { ConfigManager } from "../utils/config/config-manager";
 
 dotenv.config();
 
@@ -21,17 +22,24 @@ interface WeixinDraft {
 
 export class WeixinPublisher implements ContentPublisher {
   private accessToken: WeixinToken | null = null;
-  private readonly appId: string | undefined;
-  private readonly appSecret: string | undefined;
+  private appId: string | undefined;
+  private appSecret: string | undefined;
 
   constructor() {
-    this.validateConfig();
-    this.appId = process.env.WEIXIN_APP_ID;
-    this.appSecret = process.env.WEIXIN_APP_SECRET;
+    this.refresh();
   }
 
-  validateConfig(): void {
-    if (!process.env.WEIXIN_APP_ID || !process.env.WEIXIN_APP_SECRET) {
+  async refresh(): Promise<void> {
+    await this.validateConfig();
+    this.appId = await ConfigManager.getInstance().get("WEIXIN_APP_ID");
+    this.appSecret = await ConfigManager.getInstance().get("WEIXIN_APP_SECRET");
+  }
+
+  async validateConfig(): Promise<void> {
+    if (
+      !(await ConfigManager.getInstance().get("WEIXIN_APP_ID")) ||
+      !(await ConfigManager.getInstance().get("WEIXIN_APP_SECRET"))
+    ) {
       throw new Error(
         "微信公众号配置不完整，请检查 WEIXIN_APP_ID 和 WEIXIN_APP_SECRET"
       );

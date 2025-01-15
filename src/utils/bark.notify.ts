@@ -1,18 +1,23 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import { ConfigManager } from "./config/config-manager";
 
 dotenv.config();
 
 export class BarkNotifier {
-  private barkUrl: string | undefined;
+  private barkUrl!: string;
 
   constructor() {
-    this.validateConfig();
-    this.barkUrl = process.env.BARK_URL;
+    this.refresh();
   }
 
-  validateConfig(): void {
-    if (!process.env.BARK_URL) {
+  async refresh(): Promise<void> {
+    await this.validateConfig();
+    this.barkUrl = await ConfigManager.getInstance().get("BARK_URL");
+  }
+
+  async validateConfig(): Promise<void> {
+    if (!(await ConfigManager.getInstance().get("BARK_URL"))) {
       throw new Error("Bark 通知未配置");
     }
   }

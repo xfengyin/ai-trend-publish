@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
 import { formatDate } from "../utils/common";
+import { ConfigManager } from "../utils/config/config-manager";
 
 dotenv.config();
 
@@ -14,12 +15,18 @@ export class TwitterScraper implements ContentScraper {
   private xApiBearerToken: string | undefined;
 
   constructor() {
-    this.validateConfig();
-    this.xApiBearerToken = process.env.X_API_BEARER_TOKEN;
+    this.refresh();
   }
 
-  async validateConfig() {
-    if (!process.env.X_API_BEARER_TOKEN) {
+  async refresh(): Promise<void> {
+    await this.validateConfig();
+    this.xApiBearerToken = await ConfigManager.getInstance().get(
+      "X_API_BEARER_TOKEN"
+    );
+  }
+
+  async validateConfig(): Promise<void> {
+    if (!(await ConfigManager.getInstance().get("X_API_BEARER_TOKEN"))) {
       throw new Error(
         "X API Bearer Token is not set, please set X_API_BEARER_TOKEN in .env file"
       );

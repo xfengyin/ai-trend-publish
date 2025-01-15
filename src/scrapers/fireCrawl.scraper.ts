@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import FirecrawlApp from "firecrawl";
 import { formatDate } from "../utils/common";
+import { ConfigManager } from "../utils/config/config-manager";
 
 dotenv.config();
 
@@ -29,17 +30,21 @@ type FireCrawlResponse = {
 };
 
 export class FireCrawlScraper implements ContentScraper {
-  private app: FirecrawlApp;
+  private app!: FirecrawlApp;
 
   constructor() {
-    this.validateConfig();
+    this.refresh();
+  }
+
+  async refresh(): Promise<void> {
+    await this.validateConfig();
     this.app = new FirecrawlApp({
-      apiKey: process.env.FIRE_CRAWL_API_KEY,
+      apiKey: await ConfigManager.getInstance().get("FIRE_CRAWL_API_KEY"),
     });
   }
 
-  validateConfig(): void {
-    if (!process.env.FIRE_CRAWL_API_KEY) {
+  async validateConfig(): Promise<void> {
+    if (!(await ConfigManager.getInstance().get("FIRE_CRAWL_API_KEY"))) {
       throw new Error("FIRE_CRAWL_API_KEY 环境变量未设置");
     }
   }

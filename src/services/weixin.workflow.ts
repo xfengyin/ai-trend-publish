@@ -10,7 +10,7 @@ import { BarkNotifier } from "../utils/bark.notify";
 import dotenv from "dotenv";
 import { TwitterScraper } from "../scrapers/twitter.scraper";
 import { FireCrawlScraper } from "../scrapers/fireCrawl.scraper";
-import { sourceConfigs } from "../data-sources/getCronSources";
+import { getCronSources } from "../data-sources/getCronSources";
 import { WeixinTemplateRenderer } from "../templates/weixin/renderer";
 import { WeixinTemplate } from "../templates/interfaces/template.interface";
 import cliProgress from "cli-progress";
@@ -37,6 +37,14 @@ export class WeixinWorkflow {
     this.publisher = new WeixinPublisher();
     this.notifier = new BarkNotifier();
     this.renderer = new WeixinTemplateRenderer();
+  }
+
+  async refresh(): Promise<void> {
+    await this.notifier.refresh();
+    await this.summarizer.refresh();
+    await this.publisher.refresh();
+    await this.scraper.get("fireCrawl")?.refresh();
+    await this.scraper.get("twitter")?.refresh();
   }
 
   private async scrapeSource(
@@ -86,6 +94,8 @@ export class WeixinWorkflow {
       await this.notifier.info("工作流开始", "开始执行内容抓取和处理");
 
       // 1. 获取数据源
+      const sourceConfigs = await getCronSources();
+
       const sourceIds = sourceConfigs.AI;
       const totalSources =
         sourceIds.firecrawl.length + sourceIds.twitter.length;
