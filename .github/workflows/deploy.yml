@@ -2,7 +2,8 @@ name: Deploy to Production # 部署到生产环境
 
 on: # 触发条件
   push:
-    branches: [main] # 当推送到 main 分支时触发
+    tags:
+      - "v*" # 当推送带 v 前缀的标签时触发，如 v1.0.0
   workflow_dispatch: # 允许手动触发工作流
 
 jobs:
