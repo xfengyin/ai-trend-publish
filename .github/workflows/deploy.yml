@@ -35,32 +35,25 @@ jobs:
           DB_DATABASE=${{ secrets.DB_DATABASE }}
           EOL
 
-      - name: Setup SSH # 设置 SSH
+      - name: Setup SSH and Deploy # 设置 SSH 并部署
+        env:
+          SSH_USER: ${{ secrets.SERVER_USER }}
+          SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
+          # 设置 SSH
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+          ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
 
-          # 测试 SSH 连接
-          ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection test successful"'
-
-      - name: Deploy to server # 部署到服务器
-        run: |
           # 打包构建文件
           tar -czf build.tar.gz dist package*.json .env
 
           # 部署到服务器
-          scp build.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:~/app/
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
-            cd ~/app
-            tar -xzf build.tar.gz
-            npm ci --production
-            pm2 delete trend-finder || true
-            pm2 start dist/index.js --name trend-finder
-            rm build.tar.gz
-          '
+          scp -i ~/.ssh/id_rsa build.tar.gz $SSH_USER@$SSH_HOST:~/app/
+          ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd ~/app && \
+            tar -xzf build.tar.gz && \
+            npm ci --production && \
+            pm2 delete trend-finder || true && \
+            pm2 start dist/index.js --name trend-finder && \
+            rm build.tar.gz"
