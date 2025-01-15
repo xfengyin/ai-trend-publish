@@ -35,22 +35,39 @@ jobs:
           DB_DATABASE=${{ secrets.DB_DATABASE }}
           EOL
 
-      - name: Setup SSH and Deploy # 设置 SSH 并部署
+      - name: Setup SSH # 设置 SSH
         env:
           SSH_USER: ${{ secrets.SERVER_USER }}
           SSH_HOST: ${{ secrets.SERVER_HOST }}
         run: |
-          # 设置 SSH
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
 
-          # 打包构建文件
+      - name: Test SSH Connection # 测试 SSH 连接
+        env:
+          SSH_USER: ${{ secrets.SERVER_USER }}
+          SSH_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_rsa -v $SSH_USER@$SSH_HOST "echo 'SSH connection successful'"
+
+      - name: Package Files # 打包文件
+        run: |
           tar -czf build.tar.gz dist package*.json .env
 
-          # 部署到服务器
+      - name: Upload to Server # 上传到服务器
+        env:
+          SSH_USER: ${{ secrets.SERVER_USER }}
+          SSH_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
           scp -i ~/.ssh/id_rsa build.tar.gz $SSH_USER@$SSH_HOST:~/app/
+
+      - name: Deploy on Server # 在服务器上部署
+        env:
+          SSH_USER: ${{ secrets.SERVER_USER }}
+          SSH_HOST: ${{ secrets.SERVER_HOST }}
+        run: |
           ssh -i ~/.ssh/id_rsa $SSH_USER@$SSH_HOST "cd ~/app && \
             tar -xzf build.tar.gz && \
             npm ci --production && \
