@@ -47,7 +47,7 @@ jobs:
           echo "Testing SSH connection..."
           echo "Server: ${{ secrets.SERVER_HOST }}"
           echo "User: ${{ secrets.SERVER_USER }}"
-          ssh -i ~/.ssh/id_rsa "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" echo "SSH connection successful"
+          ssh -i ~/.ssh/id_rsa "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "source ~/.nvm/nvm.sh && nvm use 22 && echo 'SSH connection successful'"
 
       - name: Package Files # 打包文件
         run: |
@@ -60,6 +60,8 @@ jobs:
       - name: Deploy on Server # 在服务器上部署
         run: |
           ssh -i ~/.ssh/id_rsa "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "cd ~/app && \
+            source ~/.nvm/nvm.sh && \
+            nvm use 22 && \
             tar -xzf build.tar.gz && \
             npm ci --production && \
             pm2 delete trend-finder || true && \
