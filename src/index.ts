@@ -9,11 +9,11 @@ async function bootstrap() {
   configManager.addSource(new EnvConfigSource());
 
   const db = await MySQLDB.getInstance({
-    host: await configManager.get("DB_HOST"),
-    port: await configManager.get("DB_PORT"),
-    user: await configManager.get("DB_USERNAME"),
-    password: await configManager.get("DB_PASSWORD"),
-    database: await configManager.get("DB_DATABASE"),
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
   });
   configManager.addSource(new DbConfigSource(db));
 
