@@ -1,20 +1,21 @@
-# Use node:22 as the base image
-FROM node:22
+# 使用 Node.js 20 作为基础镜像
+FROM node:20-alpine
 
-# Set the working directory
+# 设置工作目录
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# 复制 package.json 和 package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# 安装依赖
+RUN npm ci --production
 
-# Copy the application code
-COPY . .
+# 复制源代码和构建文件
+COPY dist/ ./dist/
+COPY .env ./
 
-# Build the application
-RUN npm run build
+# 暴露端口
+EXPOSE 3000
 
-# Set the command to run the application
-CMD ["npm", "start"]
+# 启动应用
+CMD ["node", "dist/index.js"]

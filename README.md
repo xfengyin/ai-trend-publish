@@ -67,6 +67,7 @@ src/
 - Node.js (v14+)
 - npm 或 yarn
 - TypeScript
+- Docker (可选，用于容器化部署)
 
 ### 安装
 
@@ -99,6 +100,75 @@ npm run start
 # 构建
 npm run build
 ```
+
+## 📦 部署指南
+
+### 方式一：直接部署
+
+1. 在服务器上安装 Node.js (v20+) 和 PM2
+
+```bash
+# 安装 PM2
+npm install -g pm2
+```
+
+2. 构建项目
+
+```bash
+npm run build
+```
+
+3. 使用 PM2 启动服务
+
+```bash
+pm2 start dist/index.js --name trend-finder
+```
+
+### 方式二：Docker 部署
+
+1. 构建 Docker 镜像
+
+```bash
+docker build -t trend-finder .
+```
+
+2. 运行容器
+
+```bash
+docker run -d -p 3000:3000 --name trend-finder trend-finder
+```
+
+### 方式三：使用 Docker Compose
+
+1. 启动服务
+
+```bash
+docker-compose up -d
+```
+
+2. 查看日志
+
+```bash
+docker-compose logs -f
+```
+
+3. 停止服务
+
+```bash
+docker-compose down
+```
+
+### CI/CD 自动部署
+
+项目已配置 GitHub Actions 自动部署流程：
+
+1. 推送代码到 main 分支会自动触发部署
+2. 也可以在 GitHub Actions 页面手动触发部署
+3. 确保在 GitHub Secrets 中配置以下环境变量：
+   - `SERVER_HOST`: 服务器地址
+   - `SERVER_USER`: 服务器用户名
+   - `SSH_PRIVATE_KEY`: SSH 私钥
+   - 其他必要的环境变量（参考 .env.example）
 
 ## ⚙️ 环境变量配置
 
