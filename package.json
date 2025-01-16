@@ -4,8 +4,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "nodemon src/index.ts",
-    "build": "tsc",
-    "test": "nodemon src/test.ts"
+    "build": "tsc && npm run copy-templates",
+    "test": "nodemon src/test.ts",
+    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.10.2",
     "@types/node-cron": "^3.0.11",
+    "copyfiles": "^2.4.1",
     "nodemon": "^3.0.2",
     "rimraf": "^5.0.5",
     "ts-jest": "^29.2.5",

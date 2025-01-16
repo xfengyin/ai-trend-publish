@@ -11,9 +11,9 @@ import dotenv from "dotenv";
 import { TwitterScraper } from "../scrapers/twitter.scraper";
 import { FireCrawlScraper } from "../scrapers/fireCrawl.scraper";
 import { getCronSources } from "../data-sources/getCronSources";
-import { WeixinTemplateRenderer } from "../templates/weixin/renderer";
-import { WeixinTemplate } from "../templates/interfaces/template.interface";
 import cliProgress from "cli-progress";
+import { WeixinTemplate } from "../render/interfaces/template.interface";
+import { WeixinTemplateRenderer } from "../render/weixin/renderer";
 
 dotenv.config();
 

@@ -4,7 +4,6 @@ import {
 } from "./interfaces/publisher.interface";
 import dotenv from "dotenv";
 import axios from "axios";
-import { WeixinTemplate } from "../templates/interfaces/template.interface";
 import { ConfigManager } from "../utils/config/config-manager";
 
 dotenv.config();
