@@ -39,7 +39,6 @@ export const sourceConfigs: SourceConfig = {
     ],
     twitter: [
       { identifier: "https://x.com/HumansNoContext" },
-      // Official AI Companies
       { identifier: "https://x.com/OpenAIDevs" },
       { identifier: "https://x.com/xai" },
       { identifier: "https://x.com/alexalbert__" },

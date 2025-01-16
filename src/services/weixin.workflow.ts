@@ -14,6 +14,7 @@ import { getCronSources } from "../data-sources/getCronSources";
 import cliProgress from "cli-progress";
 import { WeixinTemplate } from "../render/interfaces/template.interface";
 import { WeixinTemplateRenderer } from "../render/weixin/renderer";
+import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ export class WeixinWorkflow {
   private publisher: ContentPublisher;
   private notifier: BarkNotifier;
   private renderer: WeixinTemplateRenderer;
+  private imageGenerator: AliWanX21ImageGenerator;
   private stats = {
     success: 0,
     failed: 0,
@@ -37,6 +39,7 @@ export class WeixinWorkflow {
     this.publisher = new WeixinPublisher();
     this.notifier = new BarkNotifier();
     this.renderer = new WeixinTemplateRenderer();
+    this.imageGenerator = new AliWanX21ImageGenerator();
   }
 
   async refresh(): Promise<void> {
@@ -45,6 +48,7 @@ export class WeixinWorkflow {
     await this.publisher.refresh();
     await this.scraper.get("fireCrawl")?.refresh();
     await this.scraper.get("twitter")?.refresh();
+    await this.imageGenerator.refresh();
   }
 
   private async scrapeSource(
@@ -188,12 +192,32 @@ export class WeixinWorkflow {
 
       console.log(`[标题生成] 生成标题: ${summaryTitle}`);
 
+      // 生成封面图片
+      const taskId = await this.imageGenerator
+        .generateImage("AI新闻日报的封面", "1440*768")
+        .then((res) => res.output.task_id);
+
+      console.log(`[封面图片] 封面图片生成任务ID: ${taskId}`);
+      const imageUrl = await this.imageGenerator
+        .waitForCompletion(taskId)
+        .then((res) => res.results?.[0]?.url)
+        .then((url) => {
+          if (!url) {
+            return "";
+          }
+          return url;
+        });
+
+      // 上传封面图片
+      const mediaId = await this.publisher.uploadImage(imageUrl);
+
       const renderedTemplate = this.renderer.render(templateData);
       console.log("[发布] 发布到微信公众号");
       const publishResult = await this.publisher.publish(
         renderedTemplate,
         `${new Date().toLocaleDateString()} AI速递 | ${summaryTitle}`,
-        summaryTitle
+        summaryTitle,
+        mediaId
       );
 
       // 5. 完成报告

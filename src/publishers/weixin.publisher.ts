@@ -5,6 +5,7 @@ import {
 import dotenv from "dotenv";
 import axios from "axios";
 import { ConfigManager } from "../utils/config/config-manager";
+import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
 
 dotenv.config();
 
@@ -83,7 +84,8 @@ export class WeixinPublisher implements ContentPublisher {
   private async uploadDraft(
     article: string,
     title: string,
-    digest: string
+    digest: string,
+    mediaId: string
   ): Promise<WeixinDraft> {
     const token = await this.ensureAccessToken();
     const url = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${token}`;
@@ -94,8 +96,7 @@ export class WeixinPublisher implements ContentPublisher {
         author: "刘耀文",
         digest: digest,
         content: article,
-        thumb_media_id:
-          "SwCSRjrdGJNaWioRQUHzgHJZrV6TNIA3EAaKJabbh4hKjw1instlmsOt9MlN20xo",
+        thumb_media_id: mediaId,
         need_open_comment: 1,
         only_fans_can_comment: 0,
       },
@@ -118,15 +119,67 @@ export class WeixinPublisher implements ContentPublisher {
       throw error;
     }
   }
+  /**
+   * 上传图片到微信
+   * @param imageUrl 图片URL
+   * @returns 图片ID
+   */
+  async uploadImage(imageUrl: string): Promise<string> {
+    if (!imageUrl) {
+      // 如果图片URL为空，则返回一个默认的图片ID
+      return "SwCSRjrdGJNaWioRQUHzgF68BHFkSlb_f5xlTquvsOSA6Yy0ZRjFo0aW9eS3JJu_";
+    }
+    const imageBuffer = await axios.get(imageUrl, {
+      responseType: "arraybuffer",
+    });
 
+    const token = await this.ensureAccessToken();
+    const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=image`;
+
+    try {
+      // 创建FormData并添加图片数据
+      const formData = new FormData();
+      formData.append(
+        "media",
+        new Blob([imageBuffer.data], { type: "image/jpeg" }),
+        `image_${Math.random().toString(36).substring(2, 8)}.jpg`
+      );
+
+      const response = await axios.post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "*/*",
+        },
+      });
+
+      if (response.data.errcode) {
+        throw new Error(`上传图片失败: ${response.data.errmsg}`);
+      }
+
+      return response.data.media_id;
+    } catch (error) {
+      console.error("上传微信图片失败:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 发布文章到微信
+   * @param article 文章内容
+   * @param title 文章标题
+   * @param digest 文章摘要
+   * @param mediaId 图片ID
+   * @returns 发布结果
+   */
   async publish(
     article: string,
     title: string,
-    digest: string
+    digest: string,
+    mediaId: string
   ): Promise<PublishResult> {
     try {
       // 上传草稿
-      const draft = await this.uploadDraft(article, title, digest);
+      const draft = await this.uploadDraft(article, title, digest, mediaId);
       return {
         publishId: draft.media_id,
         status: "draft",
