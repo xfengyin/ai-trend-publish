@@ -36,9 +36,10 @@ export const sourceConfigs: SourceConfig = {
       },
       { identifier: "https://simonwillison.net/" },
       { identifier: "https://buttondown.com/ainews/archive/" },
+      { identifier: "https://www.aibase.com/zh/daily" },
+      { identifier: "https://www.aibase.com/zh/news" },
     ],
     twitter: [
-      { identifier: "https://x.com/HumansNoContext" },
       { identifier: "https://x.com/OpenAIDevs" },
       { identifier: "https://x.com/xai" },
       { identifier: "https://x.com/alexalbert__" },
