@@ -75,7 +75,7 @@ export class FireCrawlScraper implements ContentScraper {
               "headline": "headline1",
               "content":"content1"
               "link": "link1",
-              "date_posted": "YYYY-MM-DD HH:mm:ss"
+              "date_posted": "YYYY-MM-DD HH:mm:ss",
             },
             ...
           ]
@@ -87,6 +87,7 @@ export class FireCrawlScraper implements ContentScraper {
       Return only pure JSON in the specified format (no extra text, no markdown, no \\\\).  
       The content should be about 500 words, which can summarize the full text and the main point.
       Translate all into Chinese.
+      !!
       `;
 
       // 使用 FirecrawlApp 进行抓取
@@ -115,6 +116,7 @@ export class FireCrawlScraper implements ContentScraper {
         content: story.content,
         url: story.link,
         publishDate: formatDate(story.date_posted),
+        score: 0,
         metadata: {
           source: "fireCrawl",
           originalUrl: story.link,

@@ -78,6 +78,7 @@ export class WeixinWorkflow {
       const summary = await this.summarizer.summarize(JSON.stringify(content));
       content.title = summary.title;
       content.content = summary.content;
+      content.score = summary.score;
       content.metadata.keywords = summary.keywords;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -173,9 +174,15 @@ export class WeixinWorkflow {
       }
       summaryProgress.stop();
 
+      // 按照score排序
+      allContents.sort((a, b) => b.score - a.score);
+
+      // 取出前20条
+      const topContents = allContents.slice(0, 20);
+
       // 4. 生成并发布
       console.log("\n[模板生成] 生成微信文章");
-      const templateData: WeixinTemplate[] = allContents.map((content) => ({
+      const templateData: WeixinTemplate[] = topContents.map((content) => ({
         id: content.id,
         title: content.title,
         content: content.content,

@@ -22,5 +22,6 @@ export interface ScrapedContent {
   content: string;
   url: string;
   publishDate: string;
+  score: number;
   metadata: Record<string, any>;
 }

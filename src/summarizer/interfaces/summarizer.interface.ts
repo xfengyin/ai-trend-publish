@@ -19,4 +19,5 @@ export interface Summary {
   title: string;
   content: string;
   keywords: string[];
+  score: number;
 }

@@ -71,6 +71,7 @@ export class TwitterScraper implements ContentScraper {
           content: tweet.text,
           url: `https://x.com/${username}/status/${tweet.id}`,
           publishDate: formatDate(tweet.createdAt),
+          score: 0,
           metadata: {
             platform: "twitter",
             username,
