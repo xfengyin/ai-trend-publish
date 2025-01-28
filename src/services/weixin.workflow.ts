@@ -15,6 +15,7 @@ import cliProgress from "cli-progress";
 import { WeixinTemplate } from "../render/interfaces/template.interface";
 import { WeixinTemplateRenderer } from "../render/weixin/renderer";
 import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
+import { DeepseekAPI } from "./deepseek.api";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ export class WeixinWorkflow {
   private notifier: BarkNotifier;
   private renderer: WeixinTemplateRenderer;
   private imageGenerator: AliWanX21ImageGenerator;
+  private deepSeekClient: DeepseekAPI;
   private stats = {
     success: 0,
     failed: 0,
@@ -40,6 +42,7 @@ export class WeixinWorkflow {
     this.notifier = new BarkNotifier();
     this.renderer = new WeixinTemplateRenderer();
     this.imageGenerator = new AliWanX21ImageGenerator();
+    this.deepSeekClient = new DeepseekAPI();
   }
 
   async refresh(): Promise<void> {
@@ -49,6 +52,7 @@ export class WeixinWorkflow {
     await this.scraper.get("fireCrawl")?.refresh();
     await this.scraper.get("twitter")?.refresh();
     await this.imageGenerator.refresh();
+    await this.deepSeekClient.refresh();
   }
 
   private async scrapeSource(
@@ -98,6 +102,13 @@ export class WeixinWorkflow {
       console.log("=== 开始执行微信工作流 ===");
       await this.notifier.info("工作流开始", "开始执行内容抓取和处理");
 
+      // 检查 API 额度
+      // deepseek
+      const deepSeekBalance = await this.deepSeekClient.getCNYBalance();
+      console.log("DeepSeek余额：", deepSeekBalance);
+      if (deepSeekBalance < 1.0) {
+        this.notifier.warning("DeepSeek", "余额小于一元");
+      }
       // 1. 获取数据源
       const sourceConfigs = await getCronSources();
 
