@@ -173,7 +173,7 @@ export class WeixinWorkflow {
       summaryProgress.start(allContents.length, 0);
 
       // 批量处理内容
-      const batchSize = 10;
+      const batchSize = 1;
       for (let i = 0; i < allContents.length; i += batchSize) {
         const batch = allContents.slice(i, i + batchSize);
         await Promise.all(
@@ -189,7 +189,7 @@ export class WeixinWorkflow {
       allContents.sort((a, b) => b.score - a.score);
 
       // 取出前20条
-      const topContents = allContents.slice(0, 20);
+      const topContents = allContents.slice(0, 30);
 
       // 4. 生成并发布
       console.log("\n[模板生成] 生成微信文章");
