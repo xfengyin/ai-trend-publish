@@ -2,6 +2,9 @@ import { OpenAI } from "openai";
 import { ContentSummarizer, Summary } from "./interfaces/summarizer.interface";
 import { ConfigManager } from "../utils/config/config-manager";
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
 export class DeepseekAISummarizer implements ContentSummarizer {
   private client!: OpenAI;
   private readonly model: string = "deepseek-chat";
@@ -24,6 +27,22 @@ export class DeepseekAISummarizer implements ContentSummarizer {
     }
   }
 
+  private async retryOperation<T>(operation: () => Promise<T>): Promise<T> {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        if (attempt === MAX_RETRIES) {
+          throw error;
+        }
+        await new Promise((resolve) =>
+          setTimeout(resolve, RETRY_DELAY * attempt)
+        );
+      }
+    }
+    throw new Error("Operation failed after max retries");
+  }
+
   async summarize(
     content: string,
     options?: Record<string, any>
@@ -32,7 +51,7 @@ export class DeepseekAISummarizer implements ContentSummarizer {
       throw new Error("Content is required for summarization");
     }
 
-    try {
+    return this.retryOperation(async () => {
       const systemPrompt = `你是一个专业的内容创作者和摘要生成器。你的任务是：
         1. 理解原始内容的核心观点和背景
         2. 基于原始内容进行扩充，补充相关的背景信息、技术细节或实际应用场景
@@ -50,8 +69,7 @@ export class DeepseekAISummarizer implements ContentSummarizer {
 
       const userPrompt = `请分析以下内容，在保持原意的基础上进行专业的扩充和完善，使用${
         options?.language || "中文"
-      }，完善后的内容不少于${options?.minLength || 200}字，不超过${
-        options?.maxLength || 300
+      }，完善后的内容不少于${options?.minLength || 200}字；
       }字：\n\n${content}\n\n要求：
         1. 保持专业性，可以补充相关的技术细节、应用场景或行业背景；
         2. 注意内容的连贯性和可读性；
@@ -59,9 +77,8 @@ export class DeepseekAISummarizer implements ContentSummarizer {
         4. 如果原文是新闻，可以补充相关的行业影响或未来趋势；
         5. 确保扩充的内容真实可靠，避免主观臆测；
         6. 关键字的长度不超过4个字；
-        7. !!内容不要像是AIGC生成的，要像是一个人写的，不要出现“根据以上信息”、“根据以上内容”等字样，需要是新闻类型的；
-        8. 内容不要出现其他格式，例如markdown格式，而是纯文本；
-        `;
+        7. !!内容不要像是AIGC生成的，要像是一个人写的，不要出现"根据以上信息"、"根据以上内容"等字样，需要是新闻类型的；
+        8. 内容不要出现其他格式，例如markdown格式，而是纯文本；`;
 
       const response = await this.client.chat.completions.create({
         model: this.model,
@@ -69,9 +86,7 @@ export class DeepseekAISummarizer implements ContentSummarizer {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        response_format: {
-          type: "json_object",
-        },
+        response_format: { type: "json_object" },
       });
 
       const completion = response.choices[0]?.message?.content;
@@ -81,8 +96,6 @@ export class DeepseekAISummarizer implements ContentSummarizer {
 
       try {
         const summary = JSON.parse(completion) as Summary;
-
-        // 验证必要字段
         if (
           !summary.title ||
           !summary.content ||
@@ -90,46 +103,46 @@ export class DeepseekAISummarizer implements ContentSummarizer {
         ) {
           throw new Error("摘要结果格式不正确");
         }
-
         return summary;
-      } catch (parseError) {
-        throw new Error("解析摘要结果失败");
+      } catch (error) {
+        throw new Error(
+          `解析摘要结果失败: ${
+            error instanceof Error ? error.message : "未知错误"
+          }`
+        );
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`DeepSeek AI API 错误: ${error.message}`);
-      }
-      throw error;
-    }
+    });
   }
 
   async generateTitle(
     content: string,
     options?: Record<string, any>
   ): Promise<string> {
-    const systemPrompt = `你是一个专业的内容创作者和标题生成器。你的任务是：
-    我将给你一篇文章的目录，请从中选择最重要的一个标题，用于微信公众号文章标题，使用${
-      options?.language || "中文"
-    }：
+    return this.retryOperation(async () => {
+      const systemPrompt = `你是一个专业的内容创作者和标题生成器。你的任务是：
         1. 从所有标题中选择最重要、最有价值的一个；
         2. 标题简洁明了，不超过10个字；
         3. 标题能够准确反映内容的核心观点；
         4. 标题不要出现"根据以上信息"、"根据以上内容"等字样，要像新闻类型的；
-        5. 标题不要出现其他格式，例如markdown格式，而是纯文本
-        `;
+        5. 标题不要出现其他格式，例如markdown格式，而是纯文本`;
 
-    const userPrompt = `请从以下内容中选择最重要的一个标题，用于微信公众号文章标题，使用${
-      options?.language || "中文"
-    }：\n\n${content}\n\n`;
+      const userPrompt = `请从以下内容中选择最重要的一个标题，用于微信公众号文章标题，使用${
+        options?.language || "中文"
+      }：\n\n${content}\n\n`;
 
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+      const title = response.choices[0]?.message?.content;
+      if (!title) {
+        throw new Error("未获取到有效的标题");
+      }
+      return title;
     });
-
-    return response.choices[0]?.message?.content || "";
   }
 }

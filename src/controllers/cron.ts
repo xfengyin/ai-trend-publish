@@ -6,7 +6,7 @@ export const weixinCron = async () => {
   const weixinWorkflow = new WeixinWorkflow();
   // 每天中国时间下午6点执行
   cron.schedule(
-    "0 18 * * *", // 修改为18点执行
+    "0 3 * * *", // 修改为凌晨3点执行
     async () => {
       await weixinWorkflow.refresh();
       await weixinWorkflow.process();
