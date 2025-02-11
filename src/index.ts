@@ -1,4 +1,4 @@
-import { weixinCron } from "./controllers/cron";
+import { startCronJobs } from "./controllers/cron";
 import { ConfigManager } from "./utils/config/config-manager";
 import { EnvConfigSource } from "./utils/config/sources/env-config.source";
 import { DbConfigSource } from "./utils/config/sources/db-config.source";
@@ -17,7 +17,7 @@ async function bootstrap() {
   });
   configManager.addSource(new DbConfigSource(db));
 
-  weixinCron();
+  startCronJobs();
 }
 
 bootstrap().catch(console.error);

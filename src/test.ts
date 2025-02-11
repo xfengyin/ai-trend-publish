@@ -1,4 +1,4 @@
-import { WeixinWorkflow } from "./services/weixin.workflow";
+import { WeixinWorkflow } from "./services/weixin-article.workflow";
 import { ConfigManager } from "./utils/config/config-manager";
 import { EnvConfigSource } from "./utils/config/sources/env-config.source";
 import { DbConfigSource } from "./utils/config/sources/db-config.source";
