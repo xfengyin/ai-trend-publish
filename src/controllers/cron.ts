@@ -1,18 +1,46 @@
 import cron from "node-cron";
-import { WeixinWorkflow } from "../services/weixin.workflow";
+import { WeixinWorkflow } from "../services/weixin-article.workflow";
+import { Workflow } from "../services/interfaces/workflow.interface";
 
-export const weixinCron = async () => {
-  console.log("开始执行微信发布任务...");
-  const weixinWorkflow = new WeixinWorkflow();
-  // 每天中国时间下午6点执行
+// 工作流映射表，用于存储不同日期对应的工作流
+const workflowMap = new Map<number, Workflow>();
+
+// 初始化工作流映射
+const initializeWorkflows = () => {
+  // 周一的工作流 (1)
+  workflowMap.set(1, new WeixinWorkflow());
+  // 其他日期的工作流可以在这里添加
+  // workflowMap.set(2, new OtherWorkflow()); // 周二
+  // workflowMap.set(3, new AnotherWorkflow()); // 周三
+  // 等等...
+};
+
+export const startCronJobs = async () => {
+  console.log("初始化定时任务...");
+  initializeWorkflows();
+
+  // 每天凌晨3点执行
   cron.schedule(
-    "0 3 * * *", // 修改为凌晨3点执行
+    "0 3 * * *",
     async () => {
-      await weixinWorkflow.refresh();
-      await weixinWorkflow.process();
+      const dayOfWeek = new Date().getDay(); // 0是周日，1-6是周一到周六
+      const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 将周日的0转换为7
+
+      const workflow = workflowMap.get(adjustedDay);
+      if (workflow) {
+        console.log(`开始执行周${adjustedDay}的工作流...`);
+        try {
+          await workflow.refresh();
+          await workflow.process();
+        } catch (error) {
+          console.error(`工作流执行失败:`, error);
+        }
+      } else {
+        console.log(`周${adjustedDay}没有配置对应的工作流`);
+      }
     },
     {
-      timezone: "Asia/Shanghai", // 设置为中国时区
+      timezone: "Asia/Shanghai",
     }
   );
 };
