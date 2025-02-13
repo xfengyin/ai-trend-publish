@@ -3,7 +3,7 @@ import { ConfigManager } from "./utils/config/config-manager";
 import { EnvConfigSource } from "./utils/config/sources/env-config.source";
 import { DbConfigSource } from "./utils/config/sources/db-config.source";
 import { MySQLDB } from "./utils/db/mysql.db";
-
+import { WeixinAIBenchWorkflow } from "./services/weixin-aibench.workflow";
 async function bootstrap() {
   const configManager = ConfigManager.getInstance();
   configManager.addSource(new EnvConfigSource());
@@ -19,8 +19,12 @@ async function bootstrap() {
 
   const weixinWorkflow = new WeixinWorkflow();
 
-  await weixinWorkflow.refresh();
-  await weixinWorkflow.process();
+  // await weixinWorkflow.refresh();
+  // await weixinWorkflow.process();
+
+  const weixinAIBenchWorkflow = new WeixinAIBenchWorkflow();
+  await weixinAIBenchWorkflow.refresh();
+  await weixinAIBenchWorkflow.process();
 }
 
 bootstrap().catch(console.error);

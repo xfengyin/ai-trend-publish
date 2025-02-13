@@ -42,6 +42,7 @@ export class ConfigManager {
         return value;
       }
     }
+
     throw new ConfigurationError(
       `Configuration key "${key}" not found in any source`
     );

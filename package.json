@@ -26,6 +26,7 @@
   "dependencies": {
     "@mendable/firecrawl-js": "^1.8.1",
     "@supabase/supabase-js": "^2.46.1",
+    "@types/sharp": "^0.31.1",
     "cli-progress": "^3.12.0",
     "dotenv": "^14.3.2",
     "ejs": "^3.1.10",
@@ -38,6 +39,7 @@
     "playht": "^0.13.0",
     "reflect-metadata": "^0.2.2",
     "resend": "^4.0.1-alpha.0",
+    "sharp": "^0.33.5",
     "together-ai": "^0.9.0",
     "trend-finder": "file:",
     "ts-node-dev": "^2.0.0",
