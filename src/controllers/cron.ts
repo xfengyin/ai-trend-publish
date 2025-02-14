@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { WeixinWorkflow } from "../services/weixin-article.workflow";
 import { Workflow } from "../services/interfaces/workflow.interface";
 import { WeixinAIBenchWorkflow } from "../services/weixin-aibench.workflow";
+import { WeixinHelloGithubWorkflow } from "../services/weixin-hellogithub.workflow";
 
 // 工作流映射表，用于存储不同日期对应的工作流
 const workflowMap = new Map<number, Workflow>();
@@ -13,7 +14,7 @@ const initializeWorkflows = () => {
   // 其他日期的工作流可以在这里添加
   workflowMap.set(2, new WeixinAIBenchWorkflow()); // 周二
   // workflowMap.set(3, new AnotherWorkflow()); // 周三
-  // 等等...
+  workflowMap.set(3, new WeixinHelloGithubWorkflow()); // 周三
 };
 
 export const startCronJobs = async () => {
