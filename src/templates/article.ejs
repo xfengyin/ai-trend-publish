@@ -25,7 +25,7 @@
         color: #1a1a1a;
         margin-bottom: 12px;
         padding-left: 8px;
-        border-left: 3px solid #1890ff;
+        border-left: 3px solid #07c160;
       "
     >
       📑 目录
@@ -39,7 +39,7 @@
         margin: 6px 0;
         padding: 8px;
         border-radius: 4px;
-        background: <%= index % 2 === 0 ? '#fff' : 'transparent' %>;
+        background: #fff;
       "
     >
       <span
@@ -50,7 +50,7 @@
           line-height: 20px;
           font-size: 12px;
           color: #fff;
-          background: <%= index < 3 ? ['#ffb800', '#8091a5', '#b67f52'][index] : '#8091a5' %>;
+          background: #07c160;
           text-align: center;
           border-radius: 3px;
         "
@@ -60,11 +60,10 @@
           flex: 1;
           display: flex;
           align-items: center;
-          justify-content: space-between;
           gap: 8px;
         "
       >
-        <span style="font-size: 14px; color: #1a1a1a; flex: 1;">
+        <span style="font-size: 14px; color: #1a1a1a;">
           <%= article.title %>
         </span>
       </div>
