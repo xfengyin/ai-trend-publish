@@ -15,6 +15,17 @@ const initializeWorkflows = () => {
   workflowMap.set(2, new WeixinAIBenchWorkflow()); // 周二
   // workflowMap.set(3, new AnotherWorkflow()); // 周三
   workflowMap.set(3, new WeixinHelloGithubWorkflow()); // 周三
+
+  workflowMap.set(4, new WeixinWorkflow());
+
+  workflowMap.set(5, new WeixinWorkflow());
+
+  workflowMap.set(6, new WeixinWorkflow());
+
+  workflowMap.set(7, new WeixinWorkflow());
+
+
+
 };
 
 export const startCronJobs = async () => {
