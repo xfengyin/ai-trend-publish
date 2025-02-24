@@ -8,7 +8,7 @@ export class WeixinTemplateRenderer {
 
   constructor() {
     // 读取模板文件
-    const templatePath = path.join(__dirname, "../../templates/article.html");
+    const templatePath = path.join(__dirname, "../../templates/article.ejs");
     this.template = fs.readFileSync(templatePath, "utf-8");
   }
 

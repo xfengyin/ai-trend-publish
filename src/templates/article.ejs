@@ -1,0 +1,113 @@
+<div
+  style="
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+  "
+>
+  <div
+    style="
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin: 15px 0;
+      color: #1a1a1a;
+    "
+  >
+    🚀 今日 AI 热点
+  </div>
+  <div
+    style="
+      margin: 15px auto;
+      padding: 15px 20px;
+      background: linear-gradient(to right, #f8f9fa, #ffffff);
+      border-radius: 8px;
+      border-left: 4px solid #07c160;
+    "
+  >
+    <div
+      style="
+        font-size: 16px;
+        font-weight: bold;
+        color: #1a1a1a;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      "
+    >
+      📑 <span style="background: linear-gradient(120deg, #07c160 0%, #05a54e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">目录</span>
+    </div>
+    <% articles.forEach((article, index) => { %>
+    <div
+      style="
+        margin: 8px 0;
+        padding-left: 15px;
+        font-size: 14px;
+        color: #444;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+      "
+    >
+      <span style="color: #07c160; font-weight: 500; min-width: 20px;"><%= (index + 1) %>.</span>
+      <span style="flex: 1;"><%= article.title %></span>
+    </div>
+    <% }); %>
+  </div>
+  <% articles.forEach((article, index) => { %>
+  <div style="margin-bottom: 30px;">
+    <div
+      style="
+        font-size: 18px;
+        font-weight: bold;
+        color: #1a1a1a;
+        margin: 0 0 12px;
+        padding-left: 8px;
+        border-left: 3px solid #07c160;
+      "
+    >
+      <%= article.title %>
+    </div>
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: #666;
+        margin: 8px 0;
+      "
+    >
+      <i
+        style="
+          display: inline-block;
+          width: 14px;
+          height: 14px;
+          margin-right: 4px;
+          vertical-align: middle;
+        "
+        >📅</i
+      >
+      <span style="vertical-align: middle"><%= article.publishDate %></span>
+    </div>
+    <div
+      style="
+        font-size: 15px;
+        line-height: 1.8;
+        color: #2c3e50;
+        margin: 12px 0;
+        text-align: justify;
+        font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        letter-spacing: 0.5px;
+      "
+    >
+      <div style="text-indent: 2em;"><%- article.content %></div>
+    </div>
+  </div>
+  <% }); %>
+</div>

@@ -188,8 +188,8 @@ export class WeixinWorkflow {
       // 按照score排序
       allContents.sort((a, b) => b.score - a.score);
 
-      // 取出前20条
-      const topContents = allContents.slice(0, 30);
+      // 取出前5条
+      const topContents = allContents.slice(0, 5);
 
       // 4. 生成并发布
       console.log("\n[模板生成] 生成微信文章");
