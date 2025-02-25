@@ -16,6 +16,9 @@ import { WeixinTemplate } from "../render/interfaces/template.interface";
 import { WeixinTemplateRenderer } from "../render/weixin/renderer";
 import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
 import { DeepseekAPI } from "../api/deepseek.api";
+import { ContentRanker, RankResult } from "../utils/content-rank/content-ranker";
+import { QianwenAISummarizer } from "../summarizer/qianwen-ai.summarizer";
+import { ConfigManager } from "../utils/config/config-manager";
 
 dotenv.config();
 
@@ -37,7 +40,7 @@ export class WeixinWorkflow {
     this.scraper = new Map<string, ContentScraper>();
     this.scraper.set("fireCrawl", new FireCrawlScraper());
     this.scraper.set("twitter", new TwitterScraper());
-    this.summarizer = new DeepseekAISummarizer();
+    this.summarizer = new QianwenAISummarizer();
     this.publisher = new WeixinPublisher();
     this.notifier = new BarkNotifier();
     this.renderer = new WeixinTemplateRenderer();
@@ -185,6 +188,39 @@ export class WeixinWorkflow {
       }
       summaryProgress.stop();
 
+
+
+      // 4. 内容排序
+      console.log(`[内容排序] 开始排序 ${allContents.length} 条内容`);
+      let rankedContents: RankResult[] = [];
+      try {
+        const configManager = ConfigManager.getInstance();
+        const ranker = new ContentRanker({
+          provider: "deepseek",
+          apiKey: await configManager.get("DEEPSEEK_API_KEY") as string,
+          modelName: "deepseek-reasoner"
+        });
+        rankedContents = await ranker.rankContents(allContents);
+
+        console.log("内容排序完成", rankedContents);
+      } catch (error) {
+        console.error("内容排序失败:", error);
+        await this.notifier.error("内容排序失败", "请检查API额度");
+      }
+      
+      // 分数更新
+      console.log(`[分数更新] 开始更新 ${allContents.length} 条内容`);
+      if (rankedContents.length > 0) {
+        for (const content of allContents) {
+          const rankedContent = rankedContents.find(
+            (ranked) => ranked.id === content.id
+          );
+          if (rankedContent) {
+            content.score = rankedContent.score;
+          }
+        }
+      }
+
       // 按照score排序
       allContents.sort((a, b) => b.score - a.score);
 
@@ -206,7 +242,10 @@ export class WeixinWorkflow {
       // 将所有标题总结成一个标题，然后让AI生成一个最具有吸引力的标题
       const summaryTitle = await this.summarizer.generateTitle(
         allContents.map((content) => content.title).join(" | ")
-      );
+      ).then((title) => {
+        // 限制标题长度 为 64 个字符
+        return title.slice(0, 64);
+      });
 
       console.log(`[标题生成] 生成标题: ${summaryTitle}`);
 
@@ -214,7 +253,6 @@ export class WeixinWorkflow {
       const taskId = await this.imageGenerator
         .generateImage("AI新闻日报的封面", "1440*768")
         .then((res) => res.output.task_id);
-
       console.log(`[封面图片] 封面图片生成任务ID: ${taskId}`);
       const imageUrl = await this.imageGenerator
         .waitForCompletion(taskId)

@@ -10,7 +10,7 @@ import {
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
-const MODEL_NAME = "qwen-plus";
+const MODEL_NAME = "qwen-max";
 
 export class QianwenAISummarizer implements ContentSummarizer {
   private client!: OpenAI;
@@ -77,8 +77,7 @@ export class QianwenAISummarizer implements ContentSummarizer {
           },
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 2000,
+        temperature: 0.7
       });
 
       const completion = response.choices[0]?.message?.content;
@@ -90,9 +89,7 @@ export class QianwenAISummarizer implements ContentSummarizer {
         const summary = JSON.parse(completion) as Summary;
         if (
           !summary.title ||
-          !summary.content ||
-          !Array.isArray(summary.keywords) ||
-          typeof summary.score !== 'number'
+          !summary.content
         ) {
           throw new Error("摘要结果格式不正确");
         }
