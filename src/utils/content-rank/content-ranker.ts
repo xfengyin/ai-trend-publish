@@ -1,4 +1,3 @@
-import { OpenAI } from "openai";
 import { ScrapedContent } from "../../scrapers/interfaces/scraper.interface";
 import { ConfigManager } from "../config/config-manager";
 
@@ -7,28 +6,136 @@ export interface RankResult {
   score: number;
 }
 
+export interface APIConfig {
+  apiKey: string;
+  modelName?: string;
+}
+
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
-const MODEL_NAME = "deepseek-reason";
+const DEFAULT_MODEL_NAME = "deepseek-r1";
+
+// API Provider interfaces and implementations
+interface APIProvider {
+  initialize(): Promise<void>;
+  callAPI(messages: any[]): Promise<any>;
+}
+
+class DashScopeProvider implements APIProvider {
+  private readonly API_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1";
+
+  constructor(
+    private readonly config: APIConfig
+  ) {
+    this.config.modelName = this.config.modelName || "deepseek-r1";
+  }
+
+  async initialize(): Promise<void> {
+    // 验证必要的配置
+    if (!this.config.apiKey) {
+      throw new Error("DashScope API key is required");
+    }
+  }
+
+  async callAPI(messages: any[]): Promise<any> {
+    const response = await fetch(`${this.API_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+        'User-Agent': 'TrendFinder/1.0.0',
+        'Accept': '*/*'
+      },
+      body: JSON.stringify({
+        model: this.config.modelName,
+        messages,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('API Response:', JSON.stringify(data, null, 2));
+    return data;
+  }
+}
+
+class DeepSeekProvider implements APIProvider {
+  private readonly API_BASE_URL = "https://api.deepseek.com/v1";
+
+  constructor(
+    private readonly config: APIConfig
+  ) {
+    this.config.modelName = this.config.modelName || "deepseek-chat";
+  }
+
+  async initialize(): Promise<void> {
+    // 验证必要的配置
+    if (!this.config.apiKey) {
+      throw new Error("DeepSeek API key is required");
+    }
+  }
+
+  async callAPI(messages: any[]): Promise<any> {
+    const response = await fetch(`${this.API_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.config.apiKey}`,
+        'User-Agent': 'TrendFinder/1.0.0'
+      },
+      body: JSON.stringify({
+        model: this.config.modelName,
+        messages,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('API Response:', JSON.stringify(data, null, 2));
+    return data;
+  }
+}
+
+export interface ContentRankerConfig {
+  provider: "dashscope" | "deepseek";
+  apiKey: string;
+  modelName?: string;
+}
 
 export class ContentRanker {
-  private client!: OpenAI;
+  private apiProvider: APIProvider;
+  private initialized = false;
 
-  constructor() {
-    this.initialize();
+  constructor(config: ContentRankerConfig) {
+    const apiConfig: APIConfig = {
+      apiKey: config.apiKey,
+      modelName: config.modelName
+    };
+
+    // 根据配置创建对应的provider
+    if (config.provider === "deepseek") {
+      this.apiProvider = new DeepSeekProvider(apiConfig);
+    } else {
+      this.apiProvider = new DashScopeProvider(apiConfig);
+    }
   }
 
-  private async initialize(): Promise<void> {
-    await this.validateConfig();
-    this.client = new OpenAI({
-      apiKey: await ConfigManager.getInstance().get("DEEPSEEK_API_KEY"),
-      baseURL: "https://api.deepseek.com",
-    });
-  }
-
-  private async validateConfig(): Promise<void> {
-    if (!(await ConfigManager.getInstance().get("DEEPSEEK_API_KEY"))) {
-      throw new Error("DeepSeek API key is required");
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.apiProvider.initialize();
+      this.initialized = true;
     }
   }
 
@@ -37,11 +144,11 @@ export class ContentRanker {
       try {
         return await operation();
       } catch (error) {
+        console.error(`Attempt ${attempt} failed with error:`, error);
         if (attempt === MAX_RETRIES) {
           throw error;
         }
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY * attempt));
-        console.error(`Retry attempt ${attempt} failed:`, error);
       }
     }
     throw new Error("Operation failed after max retries");
@@ -104,9 +211,19 @@ export class ContentRanker {
   private parseRankingResult(result: string): RankResult[] {
     const lines = result.trim().split('\n');
     return lines.map(line => {
-      const [id, scoreStr] = line.split(':').map(s => s.trim());
-      const score = parseFloat(scoreStr);
+      // Remove any potential Chinese characters and extra spaces
+      const cleanedLine = line.replace(/文章ID[:：]?/i, '').trim();
       
+      // Match either space-separated or colon-separated formats
+      const match = cleanedLine.match(/^(\S+)(?:[\s:：]+)(\d+(?:\.\d+)?)$/);
+      
+      if (!match) {
+        throw new Error(`Invalid format for line: ${line}`);
+      }
+
+      const [, id, scoreStr] = match;
+      const score = parseFloat(scoreStr);
+
       if (isNaN(score)) {
         throw new Error(`Invalid score format for line: ${line}`);
       }
@@ -120,10 +237,11 @@ export class ContentRanker {
       return [];
     }
 
+    await this.ensureInitialized();
+
     return this.retryOperation(async () => {
-      const response = await this.client.chat.completions.create({
-        model: MODEL_NAME,
-        messages: [
+      try {
+        const messages = [
           {
             role: "system",
             content: this.getSystemPrompt(),
@@ -132,24 +250,22 @@ export class ContentRanker {
             role: "user",
             content: this.getUserPrompt(contents),
           },
-        ],
-        temperature: 0.3, // 使用较低的温度以获得更一致的评分
-        max_tokens: 500,
-      });
+        ];
+        const response = await this.apiProvider.callAPI(messages);
+        const result = response.choices?.[0]?.message?.content;
+        
+        if (!result) {
+          throw new Error("未获取到有效的评分结果");
+        }
 
-      const result = response.choices[0]?.message?.content;
-      if (!result) {
-        throw new Error("未获取到有效的评分结果");
-      }
-
-      try {
         return this.parseRankingResult(result);
       } catch (error) {
-        throw new Error(
-          `解析评分结果失败: ${
-            error instanceof Error ? error.message : "未知错误"
-          }`
-        );
+        console.error("API调用失败:", error);
+        if (error instanceof Error) {
+          console.error("详细错误信息:", error.message);
+          console.error("错误堆栈:", error.stack);
+        }
+        throw error;
       }
     });
   }
@@ -174,3 +290,6 @@ export class ContentRanker {
     return results;
   }
 } 
+
+
+
