@@ -92,6 +92,14 @@ cp .env.example .env
 在 `.env` 文件中配置以下必要的环境变量：
 
 ```bash
+如果需要使用数据库配置（先从数据库查找配置key，然后再env寻找）：
+DB_HOST=xxxx
+DB_PORT=xxxx
+DB_USER=xxxx
+DB_PASSWORD=xxxx
+DB_DATABASE=xxxx
+
+
 微信文章获取的必备环境：
 
 # DeepseekAI API 配置 https://api-docs.deepseek.com/ 获取
