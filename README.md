@@ -2,7 +2,7 @@
 
 一个基于 AI 的趋势发现和内容发布系统，支持多源数据采集、智能总结和自动发布到微信公众号。
 
-> 🌰 示例公众号：**深巷懒猫**
+> 🌰 示例公众号：**AISPACE科技空间**
 
 > 即刻关注，体验 AI 智能创作的内容～
 
@@ -16,7 +16,7 @@
 
 - 🧠 AI 智能处理
 
-  - 使用 DeepseekAI 进行内容总结
+  - 使用 DeepseekAI Together 千问 万象 讯飞 进行内容总结
   - 关键信息提取
   - 智能标题生成
 
@@ -34,8 +34,7 @@
 ## 🛠 技术栈
 
 - **运行环境**: Node.js + TypeScript
-- **框架**: Express.js
-- **AI 服务**: DeepseekAI
+- **AI 服务**: DeepseekAI Together 千问 万象 讯飞 
 - **数据源**:
   - Twitter/X API
   - FireCrawl
@@ -44,7 +43,6 @@
 - **开发工具**:
   - nodemon (热重载)
   - TypeScript
-  - Jest (测试)
 
 ## 📦 项目结构
 
@@ -64,18 +62,16 @@ src/
 
 ### 环境要求
 
-- Node.js (v14+)
-- npm 或 yarn
+- Node.js (v22+)
+- npm
 - TypeScript
-- Docker (可选，用于容器化部署)
 
 ### 安装
 
 1. 克隆项目
 
 ```bash
-git clone [repository-url]
-cd trendpublish
+git clone https://github.com/OpenAISpace/ai-trend-publish
 ```
 
 2. 安装依赖
@@ -91,14 +87,52 @@ cp .env.example .env
 # 编辑 .env 文件配置必要的环境变量
 ```
 
+## ⚙️ 环境变量配置
+
+在 `.env` 文件中配置以下必要的环境变量：
+
+```bash
+微信文章获取的必备环境：
+
+# DeepseekAI API 配置 https://api-docs.deepseek.com/ 获取
+DEEPSEEK_API_KEY=your_api_key
+
+# FireCrawl 配置 https://www.firecrawl.dev/ 获取
+FIRE_CRAWL_API_KEY=your_api_key
+
+# Twitter API 配置  https://twitterapi.io/ 获取
+X_API_BEARER_TOKEN=your_api_key
+
+# 千问 https://bailian.console.aliyun.com/ 获取
+DASHSCOPE_API_KEY=your_api_key
+
+# 微信公众号配置
+WEIXIN_APP_ID=your_app_id
+WEIXIN_APP_SECRET=your_app_secret
+
+
+可选环境:
+
+# Bark 通知配置
+BARK_KEY=your_key
+
+# 获取图片 API 配置 https://getimg.cc/ 获取
+GETIMG_API_KEY=your_api_key
+
+TOGETHER_API_KEY=your_api_key
+
+```
+
 4. 启动项目
 
 ```bash
-# 开发模式
+# 测试模式
+npm run test
+
+# 运行
 npm run start
 
-# 构建
-npm run build
+详细运行时间见 src\controllers\cron.ts
 ```
 
 ## 📦 部署指南
@@ -121,42 +155,9 @@ npm run build
 3. 使用 PM2 启动服务
 
 ```bash
-pm2 start dist/index.js --name trend-finder
+pm2 start dist/index.js --name ai-trend-publish
 ```
 
-### 方式二：Docker 部署
-
-1. 构建 Docker 镜像
-
-```bash
-docker build -t trend-finder .
-```
-
-2. 运行容器
-
-```bash
-docker run -d -p 3000:3000 --name trend-finder trend-finder
-```
-
-### 方式三：使用 Docker Compose
-
-1. 启动服务
-
-```bash
-docker-compose up -d
-```
-
-2. 查看日志
-
-```bash
-docker-compose logs -f
-```
-
-3. 停止服务
-
-```bash
-docker-compose down
-```
 
 ### CI/CD 自动部署
 
@@ -170,57 +171,8 @@ docker-compose down
    - `SSH_PRIVATE_KEY`: SSH 私钥
    - 其他必要的环境变量（参考 .env.example）
 
-## ⚙️ 环境变量配置
 
-在 `.env` 文件中配置以下必要的环境变量：
 
-```env
-# DeepseekAI API 配置
-DEEPSEEK_API_KEY=your_api_key
-
-# FireCrawl 配置
-FIRECRAWL_API_KEY=your_api_key
-
-# Twitter API 配置
-TWITTER_API_KEY=your_api_key
-
-# 微信公众号配置
-WEIXIN_APP_ID=your_app_id
-WEIXIN_APP_SECRET=your_app_secret
-
-# Bark 通知配置
-BARK_KEY=your_key
-```
-
-## 📝 使用说明
-
-### 添加新数据源
-
-在 `src/data-sources/getCronSources.ts` 中配置数据源：
-
-```typescript
-export const sourceConfigs = {
-  AI: {
-    firecrawl: [{ identifier: "https://example.com" }],
-    twitter: [{ identifier: "https://twitter.com/username" }],
-  },
-};
-```
-
-### 自定义文章模板
-
-在 `src/templates` 目录下创建新的模板文件，参考现有的模板实现。
-
-### 定时任务配置
-
-修改 `src/controllers/cron.ts` 中的定时任务配置：
-
-```typescript
-cron.schedule("0 18 * * *", async () => {
-  // 每天 18:00 执行
-  await workflow.process();
-});
-```
 
 ## 🤝 贡献指南
 
