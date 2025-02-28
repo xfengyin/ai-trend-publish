@@ -189,6 +189,10 @@ pm2 start dist/index.js --name ai-trend-publish
 4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 提交 Pull Request
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=OpenAISpace/ai-trend-publish&type=Date)](https://star-history.com/#OpenAISpace/ai-trend-publish&Date)
+
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
