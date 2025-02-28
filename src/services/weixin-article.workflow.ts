@@ -207,7 +207,7 @@ export class WeixinWorkflow {
         console.error("内容排序失败:", error);
         await this.notifier.error("内容排序失败", "请检查API额度");
       }
-      
+
       // 分数更新
       console.log(`[分数更新] 开始更新 ${allContents.length} 条内容`);
       if (rankedContents.length > 0) {
@@ -225,7 +225,7 @@ export class WeixinWorkflow {
       allContents.sort((a, b) => b.score - a.score);
 
       // 取出前5条
-      const topContents = allContents.slice(0, 5);
+      const topContents = allContents.slice(0, 10);
 
       // 4. 生成并发布
       console.log("\n[模板生成] 生成微信文章");
