@@ -31,6 +31,18 @@
   - 任务执行状态通知
   - 错误告警
 
+## DONE
+
+- [x] 微信公众号文章发布
+- [x] 大模型每周排行榜
+- [x] 热门AI相关仓库推荐
+
+
+## Todo
+- [ ] 热门AI相关论文推荐
+- [ ] 热门AI相关工具推荐
+
+
 ## 🛠 技术栈
 
 - **运行环境**: Node.js + TypeScript
@@ -43,20 +55,6 @@
 - **开发工具**:
   - nodemon (热重载)
   - TypeScript
-
-## 📦 项目结构
-
-```
-src/
-├── controllers/     # 控制器层，处理请求
-├── data-sources/    # 数据源配置
-├── publishers/      # 发布器实现
-├── scrapers/        # 数据采集实现
-├── services/        # 业务逻辑层
-├── summarizer/      # AI 总结实现
-├── templates/       # 文章模板
-└── utils/          # 工具函数
-```
 
 ## 🚀 快速开始
 
