@@ -4,6 +4,8 @@
 
 > 🌰 示例公众号：**AISPACE科技空间**
 
+![](http://mmbiz.qpic.cn/mmbiz_jpg/QNWU7jFZnia19hwqa3MkjQVmq1bLmxfmWqR6pb8L1iaESdtPyLhsAxH3Eqiaia8urKUEMkUlxRPKj1wcdQaQ5AzNaA/0)
+
 > 即刻关注，体验 AI 智能创作的内容～
 
 ## 🌟 主要功能
