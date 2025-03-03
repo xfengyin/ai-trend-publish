@@ -1,5 +1,7 @@
 import { IConfigSource } from "./interfaces/config-source.interface";
-
+import { DbConfigSource } from "./sources/db-config.source";
+import { EnvConfigSource } from "./sources/env-config.source";
+import { MySQLDB } from "../db/mysql.db";
 export class ConfigurationError extends Error {
   constructor(message: string) {
     super(message);
@@ -20,7 +22,7 @@ export class ConfigManager {
     delayMs: 1000,
   };
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): ConfigManager {
     if (!ConfigManager.instance) {
@@ -49,7 +51,7 @@ export class ConfigManager {
     options: RetryOptions
   ): Promise<T | null> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 1; attempt <= options.maxAttempts; attempt++) {
       try {
         const value = await source.get<T>(key);
@@ -64,6 +66,21 @@ export class ConfigManager {
 
     console.warn(`Failed to get config "${key}" after ${options.maxAttempts} attempts. Last error: ${lastError?.message}`);
     return null;
+  }
+  public async initDefaultConfigSources(): Promise<void> {
+    // 环境变量
+    this.addSource(new EnvConfigSource());
+    // Database
+    if (await this.get<boolean>('ENABLE_DB')) {
+      const db = await MySQLDB.getInstance({
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+      });
+      this.addSource(new DbConfigSource(db));
+    }
   }
 
   /**
