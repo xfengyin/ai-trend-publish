@@ -167,30 +167,7 @@ export class WeixinWorkflow {
         return;
       }
 
-      // 3. 内容处理
-      console.log(`\n[内容处理] 处理 ${allContents.length} 条内容`);
-      const summaryProgress = new cliProgress.SingleBar(
-        {},
-        cliProgress.Presets.shades_classic
-      );
-      summaryProgress.start(allContents.length, 0);
-
-      // 批量处理内容
-      const batchSize = 1;
-      for (let i = 0; i < allContents.length; i += batchSize) {
-        const batch = allContents.slice(i, i + batchSize);
-        await Promise.all(
-          batch.map(async (content) => {
-            await this.processContent(content);
-            summaryProgress.increment();
-          })
-        );
-      }
-      summaryProgress.stop();
-
-
-
-      // 4. 内容排序
+      // 3. 内容排序
       console.log(`[内容排序] 开始排序 ${allContents.length} 条内容`);
       let rankedContents: RankResult[] = [];
       try {
@@ -224,10 +201,31 @@ export class WeixinWorkflow {
       // 按照score排序
       allContents.sort((a, b) => b.score - a.score);
 
-      // 取出前5条
+      // 只取前10条内容进行处理
       const topContents = allContents.slice(0, 10);
 
-      // 4. 生成并发布
+      // 4. 内容处理 (只处理排序后的前10条)
+      console.log(`\n[内容处理] 处理排序后的前 ${topContents.length} 条内容`);
+      const summaryProgress = new cliProgress.SingleBar(
+        {},
+        cliProgress.Presets.shades_classic
+      );
+      summaryProgress.start(topContents.length, 0);
+
+      // 批量处理内容
+      const batchSize = 1;
+      for (let i = 0; i < topContents.length; i += batchSize) {
+        const batch = topContents.slice(i, i + batchSize);
+        await Promise.all(
+          batch.map(async (content) => {
+            await this.processContent(content);
+            summaryProgress.increment();
+          })
+        );
+      }
+      summaryProgress.stop();
+
+      // 5. 生成并发布
       console.log("\n[模板生成] 生成微信文章");
       const templateData: WeixinTemplate[] = topContents.map((content) => ({
         id: content.id,
