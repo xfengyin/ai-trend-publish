@@ -155,7 +155,7 @@ export class ContentRanker {
   }
 
   private getSystemPrompt(): string {
-    return `你是一个专业的科技内容评估专家，特别专注于AI和前沿科技领域。你的任务是评估文章的重要性、创新性和技术价值。
+    return `你是一个专业的科技内容评估专家，特别专注于AI和前沿科技领域。你的任务是评估文章的重要性、创新性和技术价值，并识别相似内容。
 
             评分标准（总分100分）：
 
@@ -183,6 +183,11 @@ export class ContentRanker {
             - 技术发展趋势的预测
             - 市场竞争态势的分析
 
+            相似内容处理：
+            - 识别主题、技术点或事件相同的文章
+            - 对于相似文章，只保留质量最高（分数最高）的一篇
+            - 其他相似文章将被过滤，不出现在最终结果中
+
             请仔细阅读文章，并按照以下格式返回评分结果：
             文章ID: 分数
             文章ID: 分数
@@ -194,8 +199,8 @@ export class ContentRanker {
             3. 只返回ID和分数，不要有其他文字说明
             4. 分数要有区分度，避免所有文章分数过于接近
             5. 重点关注技术创新性和行业影响力
-            6. 对于纯市场新闻类文章，技术创新分数应相对较低
-            7. 对于深度技术文章，应在技术深度上给予更高权重`;
+            6. 对于深度技术文章，应在技术深度上给予更高权重
+            7. 相似文章组中只返回分数最高的一篇，其他相似文章不返回`;
   }
 
   private getUserPrompt(contents: ScrapedContent[]): string {
@@ -213,10 +218,10 @@ export class ContentRanker {
     return lines.map(line => {
       // Remove any potential Chinese characters and extra spaces
       const cleanedLine = line.replace(/文章ID[:：]?/i, '').trim();
-      
+
       // Match either space-separated or colon-separated formats
       const match = cleanedLine.match(/^(\S+)(?:[\s:：]+)(\d+(?:\.\d+)?)$/);
-      
+
       if (!match) {
         throw new Error(`Invalid format for line: ${line}`);
       }
@@ -253,7 +258,7 @@ export class ContentRanker {
         ];
         const response = await this.apiProvider.callAPI(messages);
         const result = response.choices?.[0]?.message?.content;
-        
+
         if (!result) {
           throw new Error("未获取到有效的评分结果");
         }
@@ -275,21 +280,21 @@ export class ContentRanker {
     batchSize: number = 5
   ): Promise<RankResult[]> {
     const results: RankResult[] = [];
-    
+
     for (let i = 0; i < contents.length; i += batchSize) {
       const batch = contents.slice(i, i + batchSize);
       const batchResults = await this.rankContents(batch);
       results.push(...batchResults);
-      
+
       // 添加延迟以避免API限制
       if (i + batchSize < contents.length) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
-    
+
     return results;
   }
-} 
+}
 
 
 
