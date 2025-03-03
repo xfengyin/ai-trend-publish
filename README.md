@@ -102,6 +102,7 @@ cp .env.example .env
 
 ```bash
 如果需要使用数据库配置（先从数据库查找配置key，然后再env寻找）：
+ENABLE_DB=false
 DB_HOST=xxxx
 DB_PORT=xxxx
 DB_USER=xxxx
