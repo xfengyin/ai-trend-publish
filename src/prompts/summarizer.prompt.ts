@@ -37,7 +37,12 @@ export const getSummarizerUserPrompt = ({
     4. 关键字的长度不超过4个字；
     5. !!内容不要像是AIGC生成的，要像是一个人写的，不要出现"根据以上信息"、"根据以上内容"等字样，需要是新闻类型的；
     6. 内容不要出现其他格式，例如markdown格式，而是纯文本；
-    7. 适当添加换行标记（<next_paragraph/>），使内容更易读；`;
+    7. 适当添加换行标记（<next_paragraph />），使内容更易读；
+    8. 必要时适当出现加粗（<strong> ** </strong>），使内容更易读；
+    9. 必要时适当出现斜体（<em> ** </em>），使内容更易读；
+    10. 必要时适当出现列表（<ul> ** </ul>），使内容更易读；
+    11. 必要时适当出现有序列表（<ol> ** </ol>），使内容更易读；
+    `;
 };
 
 export const getTitleSystemPrompt = (): string => {

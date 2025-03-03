@@ -1,5 +1,4 @@
-<div
-  style="
+<div style="
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
@@ -7,110 +6,80 @@
       'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
     color: #333;
-  "
->
-  <div
-    style="
-      margin: 15px auto;
-      padding: 15px 20px;
-      border-left: 3px solid #07c160;
-    "
-  >
-    <div
-      style="
-        font-size: 16px;
+  ">
+    <!-- 目录部分 -->
+    <div style="
+      margin: 10px auto;
+      padding: 10px 15px;
+      border-left: 3px solid #999;
+      background-color: #f8f8f8;
+      font-size: 13px;
+      color: #666;
+    ">
+        <p style="
+        font-size: 14px;
         font-weight: bold;
-        color: #1a1a1a;
-        margin-bottom: 15px;
-        padding-left: 8px;
-      "
-    >
-      📑 目录
-    </div>
-    <% articles.forEach((article, index) => { %>
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 8px 0;
-        padding: 0 10px;
-      "
-    >
-      <span style="color: #07c160; font-weight: 500; flex-shrink: 0;"><%= index + 1 %>.</span>
-      <span style="
-        color: #333;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: calc(100% - 30px);
+        color: #666;
+        margin-bottom: 8px;
+        padding-left: 5px;
       ">
-        <%= article.title %>
-      </span>
+            目录
+        </p>
+        <% for(var i=0; i<articles.length; i++) { var article=articles[i]; var bgColor=i % 2===0 ? '#f8f8f8' : '#f2f2f2'
+            ; %>
+            <p style="
+          margin: 3px 0;
+          padding: 4px 8px;
+          background-color: <%= bgColor %>;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        ">
+                <span style="color: #999; font-weight: 500; margin-right: 5px; font-size: 12px;">
+                    <%= i + 1 %>.
+                </span>
+                <span style="color: #666; font-size: 12px;">
+                    <%= article.title %>
+                </span>
+            </p>
+            <% } %>
     </div>
-    <% }); %>
-  </div>
-  <% articles.forEach((article, index) => { %>
-  <div style="margin-bottom: 40px;">
-    <div
-      style="
+
+    <!-- 文章内容部分 -->
+    <% for(var j=0; j<articles.length; j++) { var article=articles[j]; %>
+        <div style="margin-bottom: 40px;">
+            <h3 style="
         font-size: 18px;
         font-weight: bold;
         color: #1a1a1a;
         margin: 0 0 15px;
         padding-left: 12px;
         border-left: 3px solid #07c160;
-      "
-    >
-      <%= article.title %>
-    </div>
-    <div
-      style="
-        display: flex;
-        align-items: center;
+      ">
+                <%= article.title %>
+            </h3>
+            <p style="
         font-size: 12px;
         color: #666;
         margin: 12px 0;
         padding: 0 15px;
-      "
-    >
-      <i
-        style="
-          display: inline-block;
-          width: 14px;
-          height: 14px;
-          margin-right: 4px;
-          vertical-align: middle;
-        "
-        >📅</i
-      >
-      <span style="vertical-align: middle"><%= article.publishDate %></span>
-    </div>
-    <div
-      style="
+      ">
+                <%= article.publishDate %>
+            </p>
+            <div style="
         font-size: 15px;
         line-height: 2;
         color: #2c3e50;
         margin: 15px 0;
         padding: 0 15px;
-        text-align: justify;
-        font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        letter-spacing: 0.5px;
-      "
-    >
-      <%
-        // Split content by double newlines to separate paragraphs
-        const paragraphs = article.content
-          .replace(/<next_paragraph\/>/g, '\n\n')  // 将标记转换为双换行
-          .split(/\n\s*\n/)  // 按照一个或多个空行分割段落
-          .map(p => p.trim())
-          .filter(p => p.length > 0);
-        
-        paragraphs.forEach((paragraph, i) => {
-      %>
-        <div style="text-indent: 2em; margin-bottom: 1em;"><%= paragraph %></div>
-      <% }); %>
-    </div>
-  </div>
-  <% }); %>
+      ">
+                <% var content=article.content || "" ; var paragraphs=content.split("<next_paragraph />");
+                %>
+                <% for(var i=0; i<paragraphs.length; i++) { var para=paragraphs[i].trim(); if(para.length> 0) {
+                    %>
+                    <p style="text-indent: 2em; margin-bottom: 1em;"><%- para %></p>
+                    <% }} %>
+            </div>
+        </div>
+        <% } %>
 </div>
