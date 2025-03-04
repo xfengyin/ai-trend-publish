@@ -89,7 +89,7 @@ export const sourceConfigs: SourceConfig = {
 export const getCronSources = async (): Promise<SourceConfig> => {
   const configManager = ConfigManager.getInstance();
   try {
-    const dbEnabled = await configManager.get("DB_ENABLED");
+    const dbEnabled = await configManager.get("ENABLE_DB");
     let dbSources: CronSource[] = [];
     if (dbEnabled === "true") {
       const mysql = await MySQLDB.getInstance({
