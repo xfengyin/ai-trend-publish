@@ -5,7 +5,8 @@ import { ConfigManager } from "./config/config-manager";
 dotenv.config();
 
 export class BarkNotifier {
-  private barkUrl!: string;
+  private barkUrl?: string;
+  private enabled: boolean = false;
 
   constructor() {
     this.refresh();
@@ -13,12 +14,17 @@ export class BarkNotifier {
 
   async refresh(): Promise<void> {
     await this.validateConfig();
-    this.barkUrl = await ConfigManager.getInstance().get("BARK_URL");
   }
 
   async validateConfig(): Promise<void> {
-    if (!(await ConfigManager.getInstance().get("BARK_URL"))) {
-      throw new Error("Bark 通知未配置");
+    const configManager = ConfigManager.getInstance();
+    this.enabled = await configManager.get<boolean>("ENABLE_BARK").catch(() => false);
+    
+    if (this.enabled) {
+      this.barkUrl = await configManager.get<string>("BARK_URL").catch(() => undefined);
+      if (!this.barkUrl) {
+        console.warn("Bark URL not configured but Bark is enabled");
+      }
     }
   }
 
@@ -41,8 +47,13 @@ export class BarkNotifier {
     } = {}
   ): Promise<boolean> {
     try {
+      if (!this.enabled) {
+        console.debug("Bark notifications are disabled");
+        return false;
+      }
+
       if (!this.barkUrl) {
-        console.warn("Bark 通知未配置，跳过发送");
+        console.warn("Bark URL not configured, skipping notification");
         return false;
       }
 
