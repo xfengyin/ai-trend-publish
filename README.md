@@ -179,10 +179,11 @@ pm2 start dist/index.js --name ai-trend-publish
 
 ### 方式二：Docker 部署
 
-1. 拉去代码
+1. 拉取代码
 
+```bash
 git clone https://github.com/OpenAISpace/ai-trend-publish.git
-
+```
 
 2. 构建 Docker 镜像：
 
