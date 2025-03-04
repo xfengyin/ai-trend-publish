@@ -132,7 +132,8 @@ WEIXIN_APP_SECRET=your_app_secret
 可选环境:
 
 # Bark 通知配置
-BARK_KEY=your_key
+ENABLE_DB=false
+BARK_URL="your_url"
 
 # 获取图片 API 配置 https://getimg.cc/ 获取
 GETIMG_API_KEY=your_api_key
