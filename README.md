@@ -176,6 +176,37 @@ npm run build
 pm2 start dist/index.js --name ai-trend-publish
 ```
 
+### 方式二：Docker 部署
+
+1. 拉去代码
+
+git clone https://github.com/OpenAISpace/ai-trend-publish.git
+
+
+2. 构建 Docker 镜像：
+
+```bash
+# 构建镜像
+docker build -t ai-trend-publsih .
+```
+
+4. 运行容器：
+
+```bash
+# 方式1：通过环境变量文件运行
+docker run -d --env-file .env --name ai-trend-publsih-container ai-trend-publsih
+
+# 方式2：直接指定环境变量运行
+docker run -d \
+  -e DEEPSEEK_API_KEY=your_api_key \
+  -e FIRE_CRAWL_API_KEY=your_api_key \
+  -e X_API_BEARER_TOKEN=your_api_key \
+  -e DASHSCOPE_API_KEY=your_api_key \
+  -e WEIXIN_APP_ID=your_app_id \
+  -e WEIXIN_APP_SECRET=your_app_secret \
+  --name ai-trend-publsih-container \
+  ai-trend-publsih
+```
 
 ### CI/CD 自动部署
 
