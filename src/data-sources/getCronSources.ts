@@ -88,18 +88,21 @@ export const sourceConfigs: SourceConfig = {
 
 export const getCronSources = async (): Promise<SourceConfig> => {
   const configManager = ConfigManager.getInstance();
-  configManager.addSource(new EnvConfigSource());
   try {
-    const mysql = await MySQLDB.getInstance({
-      host: await configManager.get("DB_HOST"),
-      port: await configManager.get("DB_PORT"),
-      user: await configManager.get("DB_USER"),
-      password: await configManager.get("DB_PASSWORD"),
-      database: await configManager.get("DB_DATABASE"),
-    });
-    const dbSources = await mysql.query<CronSource>(
-      "SELECT * FROM cron_sources"
-    );
+    const dbEnabled = await configManager.get("DB_ENABLED");
+    let dbSources: CronSource[] = [];
+    if (dbEnabled === "true") {
+      const mysql = await MySQLDB.getInstance({
+        host: await configManager.get("DB_HOST"),
+        port: await configManager.get("DB_PORT"),
+        user: await configManager.get("DB_USER"),
+        password: await configManager.get("DB_PASSWORD"),
+        database: await configManager.get("DB_DATABASE"),
+      });
+      dbSources = await mysql.query<CronSource>(
+        "SELECT * FROM cron_sources"
+      );
+    }
 
     // 如果成功获取数据库数据，合并本地和数据库数据
     const mergedSources = { ...sourceConfigs };
