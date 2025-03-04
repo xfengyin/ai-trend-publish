@@ -93,15 +93,22 @@ export class WeixinPublisher implements ContentPublisher {
     const articles = [
       {
         title: title,
-        author: "刘耀文",
+        author: await ConfigManager.getInstance().get("AUTHOR"),
         digest: digest,
         content: article,
         thumb_media_id: mediaId,
-        need_open_comment: 1,
-        only_fans_can_comment: 0,
+        need_open_comment:
+          await ConfigManager.getInstance().get("NEED_OPEN_COMMENT") ===
+            "true"
+            ? 1
+            : 0,
+        only_fans_can_comment:
+          await ConfigManager.getInstance().get("ONLY_FANS_CAN_COMMENT") ===
+            "true"
+            ? 1
+            : 0,
       },
     ];
-
     try {
       const response = await axios.post(url, {
         articles,

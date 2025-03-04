@@ -128,12 +128,23 @@ DASHSCOPE_API_KEY=your_api_key
 WEIXIN_APP_ID=your_app_id
 WEIXIN_APP_SECRET=your_app_secret
 
+# 微信文章发布配置
 
-可选环境:
+# 是否开启评论
+NEED_OPEN_COMMENT=false
+
+# 是否开启赞赏
+ONLY_FANS_CAN_COMMENT=false
+
+# 文章作者
+AUTHOR=your_name
+
+
+#可选环境:
 
 # Bark 通知配置
 ENABLE_DB=false
-BARK_URL="your_url"
+BARK_URL=your_url
 
 # 获取图片 API 配置 https://getimg.cc/ 获取
 GETIMG_API_KEY=your_api_key
