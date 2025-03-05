@@ -33,6 +33,24 @@
   - 任务执行状态通知
   - 错误告警
 
+## 多种模板可选
+
+<div style="display: flex; justify-content: space-between; margin: 20px 0;">
+  <div style="text-align: center; flex: 1;">
+    <img src="https://oss.liuyaowen.cn/images/202503051143589.png" alt="base模板" width="300" style="border-radius: 8px;">
+    <div style="margin-top: 10px;">base</div>
+  </div>
+  <div style="text-align: center; flex: 1;">
+    <img src="https://oss.liuyaowen.cn/images/202503051144321.png" alt="modern模板" width="300" style="border-radius: 8px;">
+    <div style="margin-top: 10px;">modern</div>
+  </div>
+  <div style="text-align: center; flex: 1;">
+    <img src="https://oss.liuyaowen.cn/images/202503051144824.png" alt="tech模板" width="300" style="border-radius: 8px;">
+    <div style="margin-top: 10px;">tech</div>
+  </div>
+</div>
+
+
 ## DONE
 - [x] 微信公众号文章发布
 - [x] 大模型每周排行榜
@@ -152,6 +170,22 @@ GETIMG_API_KEY=your_api_key
 TOGETHER_API_KEY=your_api_key
 
 ```
+
+## ⚠️ 配置IP白名单
+
+在使用微信公众号相关功能前,请先将本机IP添加到公众号后台的IP白名单中。
+
+### 操作步骤
+
+1. 查看本机IP: [IP查询工具](https://tool.lu/ip/)
+2. 登录微信公众号后台,添加IP白名单
+
+### 图文指南
+
+<div align="center">
+  <img src="https://oss.liuyaowen.cn/images/202503051122480.png" width="200" style="margin-right: 20px"/>
+  <img src="https://oss.liuyaowen.cn/images/202503051122263.png" width="400" />
+</div>
 
 4. 启动项目
 
