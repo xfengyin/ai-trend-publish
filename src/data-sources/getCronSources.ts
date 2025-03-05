@@ -27,7 +27,6 @@ interface CronSource {
 export const sourceConfigs: SourceConfig = {
   AI: {
     firecrawl: [
-      { identifier: "https://www.anthropic.com/news" },
       { identifier: "https://news.ycombinator.com/" },
       {
         identifier:
