@@ -51,7 +51,7 @@ const previewArticles: WeixinTemplate[] = [
 
 // 渲染并保存预览文件
 const renderer = new WeixinTemplateRenderer();
-const html = renderer.render(previewArticles);
+const html = renderer.render(previewArticles, "modern");
 
 // 确保temp目录存在
 const tempDir = path.join(__dirname, "../../../temp");
