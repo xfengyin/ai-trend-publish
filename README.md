@@ -244,6 +244,14 @@ docker run -d \
 4. 推送到分支 (`git push origin feature/amazing-feature`)
 5. 提交 Pull Request
 
+## ❤️ 特别感谢
+
+感谢以下贡献者对项目的支持：
+
+<a href="https://github.com/kilimro">
+  <img src="https://avatars.githubusercontent.com/u/52153481?v=4" width="50" height="50" alt="kilimro">
+</a>
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=OpenAISpace/ai-trend-publish&type=Date)](https://star-history.com/#OpenAISpace/ai-trend-publish&Date)
