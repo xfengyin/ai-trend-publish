@@ -13,13 +13,9 @@ export class BarkNotifier {
   }
 
   async refresh(): Promise<void> {
-    await this.validateConfig();
-  }
-
-  async validateConfig(): Promise<void> {
     const configManager = ConfigManager.getInstance();
     this.enabled = await configManager.get<boolean>("ENABLE_BARK").catch(() => false);
-    
+
     if (this.enabled) {
       this.barkUrl = await configManager.get<string>("BARK_URL").catch(() => undefined);
       if (!this.barkUrl) {
@@ -27,7 +23,6 @@ export class BarkNotifier {
       }
     }
   }
-
   /**
    * 发送 Bark 通知
    * @param title 通知标题
@@ -47,6 +42,7 @@ export class BarkNotifier {
     } = {}
   ): Promise<boolean> {
     try {
+      await this.refresh();
       if (!this.enabled) {
         console.debug("Bark notifications are disabled");
         return false;

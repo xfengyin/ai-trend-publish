@@ -1,13 +1,6 @@
-import {
-  ContentPublisher,
-  PublishResult,
-} from "./interfaces/publisher.interface";
-import dotenv from "dotenv";
-import axios from "axios";
-import { ConfigManager } from "../utils/config/config-manager";
-import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
+import { ConfigManager } from "@src/utils/config/config-manager";
+import { ContentPublisher, PublishResult } from "../interfaces/publisher.interface";
 
-dotenv.config();
 
 interface WeixinToken {
   access_token: string;
@@ -59,7 +52,7 @@ export class WeixinPublisher implements ContentPublisher {
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
 
     try {
-      const response = await axios.get(url);
+      const response = await fetch(url).then(res => res.json());
       const { access_token, expires_in } = response.data;
 
       if (!access_token) {
@@ -110,9 +103,15 @@ export class WeixinPublisher implements ContentPublisher {
       },
     ];
     try {
-      const response = await axios.post(url, {
-        articles,
-      });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          articles,
+        })
+      }).then(res => res.json());
 
       if (response.data.errcode) {
         throw new Error(`上传草稿失败: ${response.data.errmsg}`);
@@ -136,9 +135,7 @@ export class WeixinPublisher implements ContentPublisher {
       // 如果图片URL为空，则返回一个默认的图片ID
       return "SwCSRjrdGJNaWioRQUHzgF68BHFkSlb_f5xlTquvsOSA6Yy0ZRjFo0aW9eS3JJu_";
     }
-    const imageBuffer = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-    });
+    const imageBuffer = await fetch(imageUrl).then(res => res.arrayBuffer());
 
     const token = await this.ensureAccessToken();
     const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${token}&type=image`;
@@ -148,16 +145,17 @@ export class WeixinPublisher implements ContentPublisher {
       const formData = new FormData();
       formData.append(
         "media",
-        new Blob([imageBuffer.data], { type: "image/jpeg" }),
+        new Blob([imageBuffer], { type: "image/jpeg" }),
         `image_${Math.random().toString(36).substring(2, 8)}.jpg`
       );
 
-      const response = await axios.post(url, formData, {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
           Accept: "*/*",
-        },
-      });
+        }
+      }).then(res => res.json());
 
       if (response.data.errcode) {
         throw new Error(`上传图片失败: ${response.data.errmsg}`);

@@ -1,15 +1,11 @@
-import {
-  ContentScraper,
-  ScraperOptions,
-  ScrapedContent,
-} from "./interfaces/scraper.interface";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
-import { formatDate } from "../utils/common";
-import { ConfigManager } from "../utils/config/config-manager";
+import { ContentScraper, ScrapedContent, ScraperOptions } from "../interfaces/scraper.interface";
+import { ConfigManager } from "@src/utils/config/config-manager";
+import { formatDate } from "@src/utils/common";
 
-dotenv.config();
+
 
 export class TwitterScraper implements ContentScraper {
   private xApiBearerToken: string | undefined;

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ConfigManager } from "../config/config-manager";
+import { ConfigManager } from "../../utils/config/config-manager";
 
 interface ApiResponse {
   output: {
@@ -7,11 +7,8 @@ interface ApiResponse {
     task_id: string;
     results?: Array<{
       url: string;
-      orig_prompt?: string;
-      actual_prompt?: string;
     }>;
   };
-  request_id: string;
 }
 
 export class AliWanX21ImageGenerator {
@@ -45,7 +42,7 @@ export class AliWanX21ImageGenerator {
     prompt: string,
     size: string = "1024*1024",
     n: number = 1
-  ): Promise<ApiResponse> {
+  ): Promise<string> {
     try {
       const response = await axios.post<ApiResponse>(
         this.baseUrl,
@@ -67,12 +64,11 @@ export class AliWanX21ImageGenerator {
         }
       );
 
-      return response.data;
+      return response.data.output.task_id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(
-          `Image generation failed: ${
-            error.response?.data?.message || error.message
+          `Image generation failed: ${error.response?.data?.message || error.message
           }`
         );
       }
@@ -80,7 +76,7 @@ export class AliWanX21ImageGenerator {
     }
   }
 
-  async checkTaskStatus(taskId: string): Promise<ApiResponse["output"]> {
+  async checkTaskStatus(taskId: string): Promise<ApiResponse['output']> {
     try {
       const response = await axios.get<ApiResponse>(
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`,
@@ -95,8 +91,7 @@ export class AliWanX21ImageGenerator {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(
-          `Task status check failed: ${
-            error.response?.data?.message || error.message
+          `Task status check failed: ${error.response?.data?.message || error.message
           }`
         );
       }
@@ -108,14 +103,14 @@ export class AliWanX21ImageGenerator {
     taskId: string,
     maxAttempts: number = 30,
     interval: number = 2000
-  ): Promise<ApiResponse["output"]> {
+  ): Promise<string[]> {
     let attempts = 0;
 
     while (attempts < maxAttempts) {
       const status = await this.checkTaskStatus(taskId);
 
       if (status.task_status === "SUCCEEDED") {
-        return status;
+        return status.results!.map((result) => result.url);
       }
 
       if (status.task_status === "FAILED") {

@@ -1,13 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { WeixinTemplateRenderer } from "../weixin/renderer";
+import { WeixinTemplateRenderer } from "../weixin.renderer";
 import { WeixinTemplate } from "../interfaces/template.interface";
-import { formatDate } from "../../utils/common";
-import { WeixinPublisher } from "../../publishers/weixin.publisher";
-import { EnvConfigSource } from "../../utils/config/sources/env-config.source";
-import { ConfigManager } from "../../utils/config/config-manager";
-import { MySQLDB } from "../../utils/db/mysql.db";
-import { DbConfigSource } from "../../utils/config/sources/db-config.source";
+import { formatDate } from "@src/utils/common";
+import { ConfigManager } from "@src/utils/config/config-manager";
+import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
+
 // 生成示例HTML预览
 const previewArticles: WeixinTemplate[] = [
   {
@@ -63,16 +61,7 @@ if (!fs.existsSync(tempDir)) {
 //上传到微信草稿箱
 async function uploadToDraft() {
   const configManager = ConfigManager.getInstance();
-  configManager.addSource(new EnvConfigSource());
-
-  const db = await MySQLDB.getInstance({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-  });
-  configManager.addSource(new DbConfigSource(db));
+  configManager.initDefaultConfigSources();
 
 
   const weixinPublish = new WeixinPublisher()

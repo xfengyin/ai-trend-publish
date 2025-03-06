@@ -1,15 +1,10 @@
-import {
-  ContentScraper,
-  ScraperOptions,
-  ScrapedContent,
-} from "./interfaces/scraper.interface";
-import dotenv from "dotenv";
+
 import { z } from "zod";
 import FirecrawlApp from "firecrawl";
-import { formatDate } from "../utils/common";
-import { ConfigManager } from "../utils/config/config-manager";
+import { ContentScraper, ScrapedContent, ScraperOptions } from "../interfaces/scraper.interface";
+import { ConfigManager } from "@src/utils/config/config-manager";
+import { formatDate } from "@src/utils/common";
 
-dotenv.config();
 
 // 使用 zod 定义数据结构
 const StorySchema = z.object({
@@ -23,11 +18,6 @@ const StoriesSchema = z.object({
   stories: z.array(StorySchema),
 });
 
-type FireCrawlResponse = {
-  success: boolean;
-  error?: string;
-  extract?: z.infer<typeof StoriesSchema>;
-};
 
 export class FireCrawlScraper implements ContentScraper {
   private app!: FirecrawlApp;

@@ -1,10 +1,4 @@
 export interface ContentScraper {
-  // 验证发布配置是否完善
-  validateConfig(): void;
-
-  // 刷新配置
-  refresh(): Promise<void>;
-
   // 抓取指定数据源的内容
   scrape(sourceId: string, options?: ScraperOptions): Promise<ScrapedContent[]>;
 }

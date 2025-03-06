@@ -1,7 +1,7 @@
 import { Workflow } from "./interfaces/workflow.interface";
 import { HelloGithubScraper } from "../scrapers/hellogithub.scraper";
 import { WeixinPublisher } from "../publishers/weixin.publisher";
-import { AliWanX21ImageGenerator } from "../utils/gen-image/aliwanx2.1.image";
+import { AliWanX21ImageGenerator } from "../providers/image-gen/aliwanx2.1.image";
 import path from "path";
 import fs from "fs";
 import ejs from "ejs";

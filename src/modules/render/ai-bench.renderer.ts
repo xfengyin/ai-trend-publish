@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 import ejs from "ejs";
-import { AIBenchTemplate } from "../interfaces/aibench.template";
-import { ModelPerformance } from "../../api/livebench.api";
+import { AIBenchTemplate } from "./interfaces/aibench.template";
+import { ModelPerformance } from "@src/api/livebench.api";
 
 interface ModelScore {
   name: string;

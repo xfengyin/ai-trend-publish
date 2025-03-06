@@ -1,7 +1,7 @@
-import fs from "fs";
 import path from "path";
 import ejs from "ejs";
-import { WeixinTemplate } from "../interfaces/template.interface";
+import { WeixinTemplate } from "./interfaces/template.interface";
+const fs = require('fs');
 
 export class WeixinTemplateRenderer {
   private templates: { [key: string]: string } = {};
