@@ -1,7 +1,8 @@
+import { ModelPerformance } from "@src/api/livebench.api";
 import fs from "fs";
 import path from "path";
-import { AIBenchRenderer } from "../aibench/renderer";
-import { ModelPerformance } from "../../api/livebench.api";
+import { AIBenchRenderer } from "../ai-bench.renderer";
+
 
 // 示例数据
 const modelData = {

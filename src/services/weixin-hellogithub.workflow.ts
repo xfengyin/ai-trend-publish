@@ -1,10 +1,11 @@
 import { Workflow } from "./interfaces/workflow.interface";
-import { HelloGithubScraper } from "../scrapers/hellogithub.scraper";
-import { WeixinPublisher } from "../publishers/weixin.publisher";
+
 import { AliWanX21ImageGenerator } from "../providers/image-gen/aliwanx2.1.image";
 import path from "path";
 import fs from "fs";
 import ejs from "ejs";
+import { HelloGithubScraper } from "@src/modules/scrapers/hellogithub.scraper";
+import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 
 export class WeixinHelloGithubWorkflow implements Workflow {
   private scraper: HelloGithubScraper;
@@ -52,13 +53,17 @@ export class WeixinHelloGithubWorkflow implements Workflow {
       const prompt =
         "GitHub AI 开源项目精选，展示代码和人工智能的融合，使用现代科技风格，蓝色和绿色为主色调";
       const taskId = await this.imageGenerator
-        .generateImage(prompt, "1440*768")
-        .then((res) => res.output.task_id);
+        .generateImage(prompt, "1440*768");
 
       console.log(`[封面图片] 生成任务ID: ${taskId}`);
       const imageUrl = await this.imageGenerator
         .waitForCompletion(taskId)
-        .then((res) => res.results?.[0]?.url || "");
+        .then((urls) => {
+          if (!urls) {
+            return "";
+          }
+          return urls[0];
+        });
 
       // 上传封面图片获取 mediaId
       console.log("3. 上传封面图片...");

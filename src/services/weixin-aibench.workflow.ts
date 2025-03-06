@@ -2,9 +2,9 @@ import { Workflow } from "./interfaces/workflow.interface";
 import { LiveBenchAPI } from "../api/livebench.api";
 import { ConfigManager } from "../utils/config/config-manager";
 import { BarkNotifier } from "../utils/bark.notify";
-import { AIBenchRenderer } from "../render/aibench/renderer";
-import { WeixinPublisher } from "../publishers/weixin.publisher";
 import path from "path";
+import { AIBenchRenderer } from "@src/modules/render/ai-bench.renderer";
+import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 
 export class WeixinAIBenchWorkflow implements Workflow {
   private liveBenchAPI: LiveBenchAPI;
