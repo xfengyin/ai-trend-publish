@@ -53,11 +53,11 @@ export class WeixinPublisher implements ContentPublisher {
 
     try {
       const response = await fetch(url).then(res => res.json());
-      const { access_token, expires_in } = response.data;
+      const { access_token, expires_in } = response;
 
       if (!access_token) {
         throw new Error(
-          "获取access_token失败: " + JSON.stringify(response.data)
+          "获取access_token失败: " + JSON.stringify(response)
         );
       }
 
@@ -113,12 +113,12 @@ export class WeixinPublisher implements ContentPublisher {
         })
       }).then(res => res.json());
 
-      if (response.data.errcode) {
-        throw new Error(`上传草稿失败: ${response.data.errmsg}`);
+      if (response.errcode) {
+        throw new Error(`上传草稿失败: ${response.errmsg}`);
       }
 
       return {
-        media_id: response.data.media_id,
+        media_id: response.media_id,
       };
     } catch (error) {
       console.error("上传微信草稿失败:", error);
@@ -157,11 +157,11 @@ export class WeixinPublisher implements ContentPublisher {
         }
       }).then(res => res.json());
 
-      if (response.data.errcode) {
-        throw new Error(`上传图片失败: ${response.data.errmsg}`);
+      if (response.errcode) {
+        throw new Error(`上传图片失败: ${response.errmsg}`);
       }
 
-      return response.data.media_id;
+      return response.media_id;
     } catch (error) {
       console.error("上传微信图片失败:", error);
       throw error;
