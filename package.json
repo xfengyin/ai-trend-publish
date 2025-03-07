@@ -6,7 +6,8 @@
     "start": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && tsc-alias && npm run copy-templates",
     "test": "nodemon -r tsconfig-paths/register src/test.ts",
-    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist"
+    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist",
+    "prepare": "husky"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "@types/node": "^20.10.2",
     "@types/node-cron": "^3.0.11",
     "copyfiles": "^2.4.1",
+    "husky": "^9.1.7",
     "nodemon": "^3.0.2",
     "rimraf": "^5.0.5",
     "ts-jest": "^29.2.5",

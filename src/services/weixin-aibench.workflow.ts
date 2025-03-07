@@ -17,7 +17,7 @@ export class WeixinAIBenchWorkflow implements Workflow {
     this.renderer = new AIBenchTemplateRenderer();
     this.notify = new BarkNotifier();
     this.publisher = new WeixinPublisher();
-  } sss
+  }
 
   async generateCoverImage(title: string): Promise<string> {
     // 生成封面图并获取URL
