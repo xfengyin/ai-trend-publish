@@ -5,6 +5,7 @@ import { RankResult } from "@src/modules/interfaces/content-ranker.interface";
 import { ContentPublisher } from "@src/modules/interfaces/publisher.interface";
 import { ContentScraper, ScrapedContent } from "@src/modules/interfaces/scraper.interface";
 import { ContentSummarizer } from "@src/modules/interfaces/summarizer.interface";
+import { BarkNotifier } from "@src/modules/notify/bark.notify";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { WeixinTemplate } from "@src/modules/render/interfaces/template.type";
 import { ArticleTemplateRenderer } from "@src/modules/render";
@@ -12,7 +13,6 @@ import { FireCrawlScraper } from "@src/modules/scrapers/fireCrawl.scraper";
 import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
 import { AISummarizer } from "@src/modules/summarizer/ai.summarizer";
 import { AliWanX21ImageGenerator } from "@src/providers/image-gen/aliwanx2.1.image";
-import { BarkNotifier } from "@src/utils/bark.notify";
 import cliProgress from "cli-progress";
 
 export class WeixinWorkflow {

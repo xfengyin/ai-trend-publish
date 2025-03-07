@@ -1,10 +1,9 @@
 import axios from "axios";
-import dotenv from "dotenv";
-import { ConfigManager } from "./config/config-manager";
+import { ConfigManager } from "../../utils/config/config-manager";
+import {INotifier, Level} from "../interfaces/notify.interface";
 
-dotenv.config();
 
-export class BarkNotifier {
+export class BarkNotifier implements INotifier{
   private barkUrl?: string;
   private enabled: boolean = false;
 
@@ -33,7 +32,7 @@ export class BarkNotifier {
     title: string,
     content: string,
     options: {
-      level?: "active" | "timeSensitive" | "passive";
+      level?: Level;
       sound?: string;
       icon?: string;
       group?: string;
