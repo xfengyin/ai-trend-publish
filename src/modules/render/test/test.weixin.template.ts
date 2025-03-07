@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { WeixinTemplateRenderer } from "../weixin.renderer";
+
 import { WeixinTemplate } from "../interfaces/template.type";
 import { formatDate } from "@src/utils/common";
 import { ConfigManager } from "@src/utils/config/config-manager";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
+import { ArticleTemplateRenderer } from "../article.renderer";
 
 // 生成示例HTML预览
 const previewArticles: WeixinTemplate[] = [
@@ -48,42 +49,46 @@ const previewArticles: WeixinTemplate[] = [
 ];
 
 // 渲染并保存预览文件
-const renderer = new WeixinTemplateRenderer();
-const html = renderer.render(previewArticles, "modern");
+async function renderAndSavePreview() {
+  const renderer = new ArticleTemplateRenderer();
+  const html = await renderer.render(previewArticles, "modern");
 
-// 确保temp目录存在
-const tempDir = path.join(__dirname, "../../../temp");
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir, { recursive: true });
+  // 确保temp目录存在
+  const tempDir = path.join(__dirname, "../../../temp");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+
+  //上传到微信草稿箱
+  async function uploadToDraft() {
+    const configManager = ConfigManager.getInstance();
+    configManager.initDefaultConfigSources();
+
+
+    const weixinPublish = new WeixinPublisher()
+
+    await weixinPublish.refresh()
+
+    const publishResult = await weixinPublish.publish(
+      html,
+      `${new Date().toLocaleDateString()} AI速递 | Test`,
+      "Test",
+      "SwCSRjrdGJNaWioRQUHzgF68BHFkSlb_f5xlTquvsOSA6Yy0ZRjFo0aW9eS3JJu_"
+    );
+    return publishResult;
+  }
+
+  uploadToDraft().then((res) => {
+    console.log(res);
+  });
+
+
+
+  // 保存渲染结果
+  const outputPath = path.join(tempDir, "preview_weixin.html");
+  fs.writeFileSync(outputPath, html, "utf-8");
+  console.log(`预览文件已生成：${outputPath}`);
 }
 
-
-//上传到微信草稿箱
-async function uploadToDraft() {
-  const configManager = ConfigManager.getInstance();
-  configManager.initDefaultConfigSources();
-
-
-  const weixinPublish = new WeixinPublisher()
-
-  await weixinPublish.refresh()
-
-  const publishResult = await weixinPublish.publish(
-    html,
-    `${new Date().toLocaleDateString()} AI速递 | Test`,
-    "Test",
-    "SwCSRjrdGJNaWioRQUHzgF68BHFkSlb_f5xlTquvsOSA6Yy0ZRjFo0aW9eS3JJu_"
-  );
-  return publishResult;
-}
-
-uploadToDraft().then((res) => {
-  console.log(res);
-});
-
-
-
-// 保存渲染结果
-const outputPath = path.join(tempDir, "preview_weixin.html");
-fs.writeFileSync(outputPath, html, "utf-8");
-console.log(`预览文件已生成：${outputPath}`);
+renderAndSavePreview();
