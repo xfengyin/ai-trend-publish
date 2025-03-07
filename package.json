@@ -6,7 +6,7 @@
     "start": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && tsc-alias && npm run copy-templates",
     "test": "nodemon -r tsconfig-paths/register src/test.ts",
-    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist",
+    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist"
   },
   "author": "",
   "license": "ISC",
