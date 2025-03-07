@@ -52,6 +52,7 @@ export class WeixinPublisher implements ContentPublisher {
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
 
     try {
+      await this.refresh();
       const response = await fetch(url).then(res => res.json());
       const { access_token, expires_in } = response;
 

@@ -6,8 +6,8 @@ import { ContentPublisher } from "@src/modules/interfaces/publisher.interface";
 import { ContentScraper, ScrapedContent } from "@src/modules/interfaces/scraper.interface";
 import { ContentSummarizer } from "@src/modules/interfaces/summarizer.interface";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
-import { WeixinTemplate } from "@src/modules/render/interfaces/template.interface";
-import { WeixinTemplateRenderer } from "@src/modules/render/weixin.renderer";
+import { WeixinTemplate } from "@src/modules/render/interfaces/template.type";
+import { ArticleTemplateRenderer } from "@src/modules/render";
 import { FireCrawlScraper } from "@src/modules/scrapers/fireCrawl.scraper";
 import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
 import { AISummarizer } from "@src/modules/summarizer/ai.summarizer";
@@ -20,7 +20,7 @@ export class WeixinWorkflow {
   private summarizer: ContentSummarizer;
   private publisher: ContentPublisher;
   private notifier: BarkNotifier;
-  private renderer: WeixinTemplateRenderer;
+  private renderer: ArticleTemplateRenderer;
   private imageGenerator: AliWanX21ImageGenerator;
   private deepSeekClient: DeepseekAPI;
   private contentRanker: ContentRanker;
@@ -37,7 +37,7 @@ export class WeixinWorkflow {
     this.summarizer = new AISummarizer();
     this.publisher = new WeixinPublisher();
     this.notifier = new BarkNotifier();
-    this.renderer = new WeixinTemplateRenderer();
+    this.renderer = new ArticleTemplateRenderer();
     this.imageGenerator = new AliWanX21ImageGenerator();
     this.deepSeekClient = new DeepseekAPI();
     this.contentRanker = new ContentRanker();
@@ -219,6 +219,7 @@ export class WeixinWorkflow {
       const summaryTitle = await this.summarizer.generateTitle(
         allContents.map((content) => content.title).join(" | ")
       ).then((title) => {
+        title = `${new Date().toLocaleDateString()} AI速递 | ${title}`
         // 限制标题长度 为 64 个字符
         return title.slice(0, 64);
       });
@@ -241,11 +242,11 @@ export class WeixinWorkflow {
       // 上传封面图片
       const mediaId = await this.publisher.uploadImage(imageUrl);
 
-      const renderedTemplate = this.renderer.render(templateData);
+      const renderedTemplate = await this.renderer.render(templateData);
       console.log("[发布] 发布到微信公众号");
       const publishResult = await this.publisher.publish(
         renderedTemplate,
-        `${new Date().toLocaleDateString()} AI速递 | ${summaryTitle}`,
+        summaryTitle,
         summaryTitle,
         mediaId
       );

@@ -33,23 +33,9 @@
   - 任务执行状态通知
   - 错误告警
 
-## 多种模板可选
+## 📝 文章模板
 
-<div style="display: flex; justify-content: space-between; margin: 20px 0;">
-  <div style="text-align: center; flex: 1;">
-    <img src="https://oss.liuyaowen.cn/images/202503051143589.png" alt="base模板" width="300" style="border-radius: 8px;">
-    <div style="margin-top: 10px;">base</div>
-  </div>
-  <div style="text-align: center; flex: 1;">
-    <img src="https://oss.liuyaowen.cn/images/202503051144321.png" alt="modern模板" width="300" style="border-radius: 8px;">
-    <div style="margin-top: 10px;">modern</div>
-  </div>
-  <div style="text-align: center; flex: 1;">
-    <img src="https://oss.liuyaowen.cn/images/202503051144824.png" alt="tech模板" width="300" style="border-radius: 8px;">
-    <div style="margin-top: 10px;">tech</div>
-  </div>
-</div>
-
+TrendPublish 提供了多种精美的文章模板。查看 [模板展示页面](docs/templates.html) 了解更多详情。
 
 ## DONE
 - [x] 微信公众号文章发布
@@ -167,6 +153,16 @@ DEFAULT_LLM_PROVIDER="DEEPSEEK"
 # 也可以指定具体模型，格式为 "提供者:模型名称"，例如 "DEEPSEEK:deepseek-reasoner"
 AI_CONTENT_RANKER_LLM_PROVIDER="DEEPSEEK:deepseek-reasoner"
 AI_SUMMARIZER_LLM_PROVIDER="DEEPSEEK"
+
+# 模板配置
+# 文章模板类型配置，可选值: default | modern | tech | mianpro | random
+ARTICLE_TEMPLATE_TYPE="default"
+
+# HelloGitHub模板类型配置，可选值: weixin | random
+HELLOGITHUB_TEMPLATE_TYPE="default"
+
+# AIBench模板类型配置，可选值: default | random
+AIBENCH_TEMPLATE_TYPE="default"
 
 # 数据存储配置
 ENABLE_DB=true

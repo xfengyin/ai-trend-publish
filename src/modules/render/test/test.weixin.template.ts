@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { WeixinTemplateRenderer } from "../weixin.renderer";
-import { WeixinTemplate } from "../interfaces/template.interface";
+import { WeixinTemplate } from "../interfaces/template.type";
 import { formatDate } from "@src/utils/common";
 import { ConfigManager } from "@src/utils/config/config-manager";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";

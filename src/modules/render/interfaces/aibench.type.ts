@@ -7,6 +7,7 @@ export interface ModelScore {
   dataAnalysis?: number;
   language?: number;
   if?: number;
+  organization?: string;
 }
 
 export interface CategoryData {

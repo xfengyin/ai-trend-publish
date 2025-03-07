@@ -1,8 +1,7 @@
 import { ModelPerformance } from "@src/api/livebench.api";
 import fs from "fs";
 import path from "path";
-import { AIBenchRenderer } from "../ai-bench.renderer";
-
+import { AIBenchTemplateRenderer } from "../aibench.renderer";
 
 // 示例数据
 const modelData = {
@@ -128,35 +127,46 @@ const modelData = {
   },
 } as { [key: string]: ModelPerformance };
 
+// 保存文件的工具函数
+async function saveToFile(content: string, filePath: string): Promise<void> {
+  const dir = path.dirname(filePath);
+
+  // 确保目录存在
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  // 写入文件
+  return new Promise((resolve, reject) => {
+    fs.writeFile(filePath, content, 'utf8', (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 async function main() {
   try {
     // 使用渲染器处理数据
-    const result = AIBenchRenderer.render(modelData);
+    const renderer = new AIBenchTemplateRenderer();
+    const templateData = renderer.transformData(modelData);
+    const htmlContent = await renderer.render(templateData);
 
-    // 创建输出目录
-    const tempDir = path.join(__dirname, "../../../temp");
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-
-    // 实例化渲染器并生成HTML
-    const renderer = new AIBenchRenderer();
-    const outputPath = path.join(tempDir, "aibench_preview.html");
-
-    // 渲染并保存结果
-    await renderer.renderToFile(result, outputPath);
+    // 保存到文件
+    const outputPath = path.join(__dirname, "../../../temp/aibench_preview.html");
+    await saveToFile(htmlContent, outputPath);
     console.log(`预览文件已生成：${outputPath}`);
 
     // 输出一些基本信息用于验证
     console.log("\n=== AI模型评测数据 ===");
-    console.log(`总计模型数：${result.globalTop10.length}`);
+    console.log(`总计模型数：${templateData.globalTop10.length}`);
     console.log("\n--- 全局排名前3名 ---");
-    result.globalTop10.slice(0, 3).forEach((model, index) => {
+    templateData.globalTop10.slice(0, 3).forEach((model, index) => {
       console.log(`${index + 1}. ${model.name} (${model.score.toFixed(2)}分)`);
     });
 
     console.log("\n--- 各项能力最高分 ---");
-    result.categories.forEach((category) => {
+    templateData.categories.forEach((category) => {
       if (category.models.length > 0) {
         const topModel = category.models[0];
         console.log(

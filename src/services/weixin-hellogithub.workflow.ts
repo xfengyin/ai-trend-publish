@@ -1,26 +1,20 @@
 import { Workflow } from "./interfaces/workflow.interface";
-
 import { AliWanX21ImageGenerator } from "../providers/image-gen/aliwanx2.1.image";
-import path from "path";
-import fs from "fs";
-import ejs from "ejs";
 import { HelloGithubScraper } from "@src/modules/scrapers/hellogithub.scraper";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
+import { HelloGithubTemplateRenderer } from "@src/modules/render";
 
 export class WeixinHelloGithubWorkflow implements Workflow {
   private scraper: HelloGithubScraper;
   private publisher: WeixinPublisher;
-  private templatePath: string;
   private imageGenerator: AliWanX21ImageGenerator;
+  private renderer: HelloGithubTemplateRenderer;
 
   constructor() {
     this.scraper = new HelloGithubScraper();
     this.publisher = new WeixinPublisher();
     this.imageGenerator = new AliWanX21ImageGenerator();
-    this.templatePath = path.join(
-      __dirname,
-      "../templates/hellogithub-weixin.ejs"
-    );
+    this.renderer = new HelloGithubTemplateRenderer();
   }
 
   /**
@@ -71,20 +65,8 @@ export class WeixinHelloGithubWorkflow implements Workflow {
 
       // 4. 渲染内容
       console.log("4. 渲染内容...");
-      const template = fs.readFileSync(this.templatePath, "utf-8");
       const firstItem = items[0];
-      const title = `GitHub AI 热榜第一名：${firstItem.name} | 本周精选`;
-      const html = ejs.render(
-        template,
-        {
-          title,
-          items,
-          renderDate: new Date().toISOString().split("T")[0],
-        },
-        {
-          rmWhitespace: true,
-        }
-      );
+      const html = await this.renderer.render(items);
 
       // 5. 发布到微信
       console.log("5. 准备发布到微信...");
