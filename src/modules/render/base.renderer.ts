@@ -59,17 +59,19 @@ export abstract class BaseTemplateRenderer<T> {
      */
     public async render(
         data: T extends ejs.Data ? T : ejs.Data,
-        templateType: string | 'config' | 'random' = 'default'
+        templateType?: string
     ): Promise<string> {
         try {
             let finalTemplateType: string;
 
-            // 根据参数决定使用哪种模板
-            if (templateType === 'config') {
+            // 如果没有传templateType，从配置获取
+            if (!templateType) {
                 finalTemplateType = await this.getTemplateTypeFromConfig();
             } else if (templateType === 'random') {
+                // 如果指定random，随机选择模板
                 finalTemplateType = this.getRandomTemplateType();
             } else {
+                // 检查指定的模板是否存在
                 if (!this.availableTemplates.includes(templateType)) {
                     throw new Error(`Template type '${templateType}' not found for ${this.templatePrefix}`);
                 }
