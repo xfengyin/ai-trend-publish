@@ -70,11 +70,11 @@ export class LLMFactory {
      * @param needRefresh 是否需要刷新提供者配置
      * @returns LLM提供者实例
      */
-    public async getLLMProvider(typeOrConfig: string | LLMProviderType, needRefresh: boolean = true): Promise<LLMProvider> {
+    public async getLLMProvider(typeOrConfig: string | ParsedLLMConfig, needRefresh: boolean = true): Promise<LLMProvider> {
         // 解析配置
         const config = typeof typeOrConfig === 'string'
             ? this.parseLLMConfig(typeOrConfig)
-            : { providerType: typeOrConfig };
+            : typeOrConfig;
 
         // 获取缓存键
         const cacheKey = this.getProviderCacheKey(config);
