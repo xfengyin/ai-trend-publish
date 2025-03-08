@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ConfigManager } from "../../utils/config/config-manager";
+import { BaseImageGenerator } from "./base.image-generator";
 
 interface ApiResponse {
   output: {
@@ -11,20 +11,19 @@ interface ApiResponse {
   };
 }
 
-export class AliWanX21ImageGenerator {
+export interface AliWanX21Options {
+  prompt: string;
+  size?: string;
+}
+
+export class AliWanX21ImageGenerator extends BaseImageGenerator {
   private apiKey!: string;
   private baseUrl =
     "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis";
   private readonly model = "wanx2.1-t2i-turbo";
 
-  constructor() {
-    this.refresh();
-  }
-
-  async refresh() {
-    const apiKey = await ConfigManager.getInstance().get<string>(
-      "DASHSCOPE_API_KEY"
-    );
+  async refresh(): Promise<void> {
+    const apiKey = await this.configManager.get<string>("DASHSCOPE_API_KEY");
     if (!apiKey) {
       throw new Error("DASHSCOPE_API_KEY environment variable is not set");
     }
@@ -33,16 +32,11 @@ export class AliWanX21ImageGenerator {
 
   /**
    * 生成图片
-   * @param prompt 提示词
-   * @param size 图片尺寸
-   * @param n 生成数量
-   * @returns 图片生成结果
+   * @param options 生成选项
+   * @returns 图片URL数组
    */
-  async generateImage(
-    prompt: string,
-    size: string = "1024*1024",
-    n: number = 1
-  ): Promise<string> {
+  async generate(options: AliWanX21Options): Promise<string> {
+    const { prompt, size = "1024*1024" } = options;
     try {
       const response = await axios.post<ApiResponse>(
         this.baseUrl,
@@ -51,7 +45,6 @@ export class AliWanX21ImageGenerator {
           input: { prompt },
           parameters: {
             size,
-            n,
             seed: Math.floor(Math.random() * 4294967290) + 1,
           },
         },
@@ -64,19 +57,19 @@ export class AliWanX21ImageGenerator {
         }
       );
 
-      return response.data.output.task_id;
+      const taskId = response.data.output.task_id;
+      return this.waitForCompletion(taskId);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(
-          `Image generation failed: ${error.response?.data?.message || error.message
-          }`
+          `图片生成失败: ${error.response?.data?.message || error.message}`
         );
       }
       throw error;
     }
   }
 
-  async checkTaskStatus(taskId: string): Promise<ApiResponse['output']> {
+  private async checkTaskStatus(taskId: string): Promise<ApiResponse['output']> {
     try {
       const response = await axios.get<ApiResponse>(
         `https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`,
@@ -91,37 +84,36 @@ export class AliWanX21ImageGenerator {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(
-          `Task status check failed: ${error.response?.data?.message || error.message
-          }`
+          `任务状态检查失败: ${error.response?.data?.message || error.message}`
         );
       }
       throw error;
     }
   }
 
-  async waitForCompletion(
+  private async waitForCompletion(
     taskId: string,
     maxAttempts: number = 30,
     interval: number = 2000
-  ): Promise<string[]> {
+  ): Promise<string> {
     let attempts = 0;
 
     while (attempts < maxAttempts) {
       const status = await this.checkTaskStatus(taskId);
 
       if (status.task_status === "SUCCEEDED") {
-        return status.results!.map((result) => result.url);
+        return status.results![0].url;
       }
 
       if (status.task_status === "FAILED") {
-        throw new Error("Image generation task failed");
+        throw new Error("图片生成任务失败");
       }
 
       await new Promise((resolve) => setTimeout(resolve, interval));
       attempts++;
     }
 
-    throw new Error("Timeout waiting for image generation");
+    throw new Error("等待图片生成超时");
   }
 }
 

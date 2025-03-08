@@ -14,6 +14,7 @@ import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
 import { AISummarizer } from "@src/modules/summarizer/ai.summarizer";
 import { AliWanX21ImageGenerator } from "@src/providers/image-gen/aliwanx2.1.image";
 import cliProgress from "cli-progress";
+import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
 
 export class WeixinWorkflow {
   private scraper: Map<string, ContentScraper>;
@@ -227,17 +228,9 @@ export class WeixinWorkflow {
       console.log(`[标题生成] 生成标题: ${summaryTitle}`);
 
       // 生成封面图片
-      const taskId = await this.imageGenerator
-        .generateImage("AI新闻日报的封面", "1440*768");
-      console.log(`[封面图片] 封面图片生成任务ID: ${taskId}`);
-      const imageUrl = await this.imageGenerator
-        .waitForCompletion(taskId)
-        .then((urls) => {
-          if (!urls) {
-            return "";
-          }
-          return urls[0];
-        });
+      const imageGenerator = await ImageGeneratorFactory.getInstance().getGenerator("ALIWANX21");
+      const imageUrl = await imageGenerator.generate({ prompt: "AI新闻日报的封面", size: "1440*768" });
+      console.log(`[封面图片] 封面图片生成任务ID: ${imageUrl}`);
 
       // 上传封面图片
       const mediaId = await this.publisher.uploadImage(imageUrl);

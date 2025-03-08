@@ -3,6 +3,7 @@ import { AliWanX21ImageGenerator } from "../providers/image-gen/aliwanx2.1.image
 import { HelloGithubScraper } from "@src/modules/scrapers/hellogithub.scraper";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { HelloGithubTemplateRenderer } from "@src/modules/render";
+import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
 
 export class WeixinHelloGithubWorkflow implements Workflow {
   private scraper: HelloGithubScraper;
@@ -46,18 +47,8 @@ export class WeixinHelloGithubWorkflow implements Workflow {
       console.log("2. 生成封面图片...");
       const prompt =
         "GitHub AI 开源项目精选，展示代码和人工智能的融合，使用现代科技风格，蓝色和绿色为主色调";
-      const taskId = await this.imageGenerator
-        .generateImage(prompt, "1440*768");
-
-      console.log(`[封面图片] 生成任务ID: ${taskId}`);
-      const imageUrl = await this.imageGenerator
-        .waitForCompletion(taskId)
-        .then((urls) => {
-          if (!urls) {
-            return "";
-          }
-          return urls[0];
-        });
+      const imageGenerator = await ImageGeneratorFactory.getInstance().getGenerator("ALIWANX21");
+      const imageUrl = await imageGenerator.generate({ prompt, size: "1440*768" })
 
       // 上传封面图片获取 mediaId
       console.log("3. 上传封面图片...");

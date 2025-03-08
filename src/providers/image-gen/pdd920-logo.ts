@@ -1,3 +1,5 @@
+import { BaseImageGenerator } from "./base.image-generator";
+
 export interface PDD920LogoOptions {
     text: string;
     t: string;
@@ -8,15 +10,19 @@ interface PDD920Response {
     url: string;
 }
 
-export class PDD920LogoGenerator {
+export class PDD920LogoGenerator extends BaseImageGenerator {
     private static readonly BASE_URL = 'https://api.920pdd.com/API/ceshi/wx/';
+
+    async refresh(): Promise<void> {
+        // PDD920 Logo生成器不需要配置
+    }
 
     /**
      * 生成图片
      * @param options 配置选项
-     * @returns 如果type为json，返回JSON响应；否则返回图片buffer
+     * @returns 如果type为json，返回图片URL；否则返回图片buffer
      */
-    public static async generate(options: PDD920LogoOptions): Promise<PDD920Response | Buffer> {
+    async generate(options: PDD920LogoOptions): Promise<string | Buffer> {
         try {
             // 构建URL和参数
             const params = new URLSearchParams();
@@ -25,7 +31,7 @@ export class PDD920LogoGenerator {
             if (options.type) {
                 params.append('type', options.type);
             }
-            const url = `${this.BASE_URL}?${params.toString()}`;
+            const url = `${PDD920LogoGenerator.BASE_URL}?${params.toString()}`;
 
             const response = await fetch(url);
 
@@ -35,7 +41,7 @@ export class PDD920LogoGenerator {
 
             if (options.type === 'json') {
                 const data = await response.json() as PDD920Response;
-                return data;
+                return data.url;
             } else {
                 const buffer = await response.arrayBuffer();
                 return Buffer.from(buffer);
@@ -57,7 +63,8 @@ export class PDD920LogoGenerator {
         options: PDD920LogoOptions,
         outputPath: string
     ): Promise<void> {
-        const result = await this.generate({ ...options, type: undefined });
+        const generator = new PDD920LogoGenerator();
+        const result = await generator.generate({ ...options, type: undefined });
         if (Buffer.isBuffer(result)) {
             const fs = require('fs').promises;
             await fs.writeFile(outputPath, result);

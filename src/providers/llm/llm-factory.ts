@@ -1,12 +1,7 @@
 import { ConfigManager } from "@src/utils/config/config-manager";
-import { LLMProvider } from "@src/providers/interfaces/llm.interface";
+import { LLMProvider, LLMProviderType, LLMProviderTypeMap } from "@src/providers/interfaces/llm.interface";
 import { OpenAICompatibleLLM } from "./openai-compatible-llm";
 import { XunfeiLLM } from "./xunfei-llm";
-
-/**
- * LLM提供者类型枚举
- */
-export type LLMProviderType = "OPENAI" | "DEEPSEEK" | "XUNFEI" | "CUSTOM" | "QWEN";
 
 /**
  * 解析LLM提供者配置
@@ -64,30 +59,37 @@ export class LLMFactory {
         return config.model ? `${config.providerType}:${config.model}` : config.providerType;
     }
 
+
+
     /**
      * 获取指定类型的LLM提供者
-     * @param typeOrConfig LLM提供者类型或配置字符串
+     * @param typeOrConfig LLM提供者配置字符串
      * @param needRefresh 是否需要刷新提供者配置
      * @returns LLM提供者实例
      */
-    public async getLLMProvider(typeOrConfig: string | ParsedLLMConfig, needRefresh: boolean = true): Promise<LLMProvider> {
+    public async getLLMProvider<T extends ParsedLLMConfig>(
+        typeOrConfig: T | string,
+        needRefresh: boolean = true
+    ): Promise<LLMProviderTypeMap[T["providerType"]]> {
         // 解析配置
         const config = typeof typeOrConfig === 'string'
             ? this.parseLLMConfig(typeOrConfig)
             : typeOrConfig;
+
+        type ProviderType = LLMProviderTypeMap[T["providerType"]];
 
         // 获取缓存键
         const cacheKey = this.getProviderCacheKey(config);
 
         // 如果已经创建过该类型的提供者，且不需要刷新，直接返回
         if (this.providers.has(cacheKey) && !needRefresh) {
-            return this.providers.get(cacheKey)!;
+            return this.providers.get(cacheKey)! as ProviderType;
         }
 
         // 如果需要刷新且提供者存在，先刷新配置
         if (needRefresh && this.providers.has(cacheKey)) {
             await this.providers.get(cacheKey)!.refresh();
-            return this.providers.get(cacheKey)!;
+            return this.providers.get(cacheKey)! as ProviderType;
         }
 
         // 根据类型创建对应的LLM提供者
@@ -121,7 +123,7 @@ export class LLMFactory {
         try {
             await provider.initialize();
             this.providers.set(cacheKey, provider);
-            return provider;
+            return provider as ProviderType;
         } catch (error) {
             console.error(`初始化LLM提供者失败 [${cacheKey}]:`, error);
             throw new Error(`无法初始化LLM提供者 [${cacheKey}]: ${(error as Error).message}`);

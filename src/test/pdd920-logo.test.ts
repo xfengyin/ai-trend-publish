@@ -1,3 +1,4 @@
+import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
 import { PDD920LogoGenerator } from "../providers/image-gen/pdd920-logo";
 import path from "path";
 
@@ -13,11 +14,7 @@ async function testPDD920Logo() {
         );
 
         // 测试获取JSON URL
-        const imageUrl = await PDD920LogoGenerator.generate({
-            t: "@AISPACE科技空间",
-            text: "本周大模型榜单",
-            type: "json"
-        });
+        const imageUrl = await ImageGeneratorFactory.getInstance().getGenerator("PDD920_LOGO");
 
         console.log("图片URL:", imageUrl);
         console.log("图片已保存到 output/pdd920-logo.png");

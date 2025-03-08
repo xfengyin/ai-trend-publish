@@ -35,7 +35,7 @@
 
 ## 📝 文章模板
 
-TrendPublish 提供了多种精美的文章模板。查看 [模板展示页面](docs/templates.html) 了解更多详情。
+TrendPublish 提供了多种精美的文章模板。查看 [模板展示页面](https://openaispace.github.io/ai-trend-publish/templates.html) 了解更多详情。
 
 ## DONE
 - [x] 微信公众号文章发布
@@ -272,13 +272,8 @@ docker run -d --env-file .env --name ai-trend-publsih-container ai-trend-publsih
 
 # 方式2：直接指定环境变量运行
 docker run -d \
-  -e DEEPSEEK_API_KEY=your_api_key \
-  -e FIRE_CRAWL_API_KEY=your_api_key \
-  -e X_API_BEARER_TOKEN=your_api_key \
-  -e DASHSCOPE_API_KEY=your_api_key \
-  -e QWEN_API_KEY=your_api_key \
-  -e WEIXIN_APP_ID=your_app_id \
-  -e WEIXIN_APP_SECRET=your_app_secret \
+  -e XXXX=XXXX \
+  ...其他环境变量... \
   --name ai-trend-publsih-container \
   ai-trend-publsih
 ```
@@ -295,8 +290,27 @@ docker run -d \
    - `SSH_PRIVATE_KEY`: SSH 私钥
    - 其他必要的环境变量（参考 .env.example）
 
+## 模板开发指南
 
+本项目支持自定义模板开发，主要包含以下几个部分：
 
+### 1. 了解数据结构
+
+查看 `src/modules/render/interfaces` 目录下的类型定义文件，了解各个渲染模块需要的数据结构
+
+### 2. 开发模板
+
+在 `src/templates` 目录下按照对应模块开发 EJS 模板
+
+### 3. 注册模板
+
+在对应的渲染器类中注册新模板，如 `ArticleTemplateRenderer`：
+
+### 4. 测试渲染效果
+
+```
+npx ts-node -r tsconfig-paths/register src\modules\render\test\test.weixin.template.ts
+```
 
 ## 🤝 贡献指南
 

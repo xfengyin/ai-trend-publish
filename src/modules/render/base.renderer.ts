@@ -86,7 +86,9 @@ export abstract class BaseTemplateRenderer<T> {
             // 使用 EJS 渲染模板
             return ejs.render(
                 template,
-                data,
+                {
+                    articles: data,
+                },
                 {
                     rmWhitespace: true,
                 }

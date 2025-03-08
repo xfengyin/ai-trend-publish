@@ -1,5 +1,5 @@
 import { ScrapedContent } from './scraper.interface';
-import { LLMProviderType } from '../../providers/llm/llm-factory';
+import { LLMProviderType } from '@src/providers/interfaces/llm.interface';
 
 export interface RankResult {
   id: string;

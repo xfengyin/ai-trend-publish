@@ -72,7 +72,7 @@ export class AISummarizer implements ContentSummarizer {
     options?: Record<string, any>
   ): Promise<string> {
     return RetryUtil.retryOperation(async () => {
-      const llm = await this.llmFactory.getDefaultProvider();
+      const llm = await this.llmFactory.getLLMProvider(await this.configInstance.get("AI_SUMMARIZER_LLM_PROVIDER"));
       const response = await llm.createChatCompletion([
         {
           role: "system",

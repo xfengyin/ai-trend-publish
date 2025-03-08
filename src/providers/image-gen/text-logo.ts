@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { BaseImageGenerator } from "./base.image-generator";
 
 export interface TextLogoOptions {
   text: string;
@@ -11,7 +12,7 @@ export interface TextLogoOptions {
   gradientEnd?: string;
 }
 
-export class TextLogoGenerator {
+export class TextLogoGenerator extends BaseImageGenerator {
   private static readonly DEFAULT_OPTIONS: Partial<TextLogoOptions> = {
     width: 1200,
     height: 400,
@@ -22,8 +23,12 @@ export class TextLogoGenerator {
     gradientEnd: "#4285f4",
   };
 
-  public static async generate(options: TextLogoOptions): Promise<Buffer> {
-    const finalOptions = { ...this.DEFAULT_OPTIONS, ...options };
+  async refresh(): Promise<void> {
+    // 文本Logo生成器不需要配置
+  }
+
+  async generate(options: TextLogoOptions): Promise<Buffer> {
+    const finalOptions = { ...TextLogoGenerator.DEFAULT_OPTIONS, ...options };
     const {
       width,
       height,
@@ -75,7 +80,8 @@ export class TextLogoGenerator {
     options: TextLogoOptions,
     outputPath: string
   ): Promise<void> {
-    const buffer = await this.generate(options);
+    const generator = new TextLogoGenerator();
+    const buffer = await generator.generate(options);
     await sharp(buffer).toFile(outputPath);
   }
 }

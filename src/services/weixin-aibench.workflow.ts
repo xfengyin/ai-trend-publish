@@ -5,6 +5,7 @@ import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { CategoryData, ModelScore } from "@src/modules/render/interfaces/aibench.type";
 import { PDD920LogoGenerator } from "@src/providers/image-gen/pdd920-logo";
 import { BarkNotifier } from "@src/modules/notify/bark.notify";
+import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
 
 export class WeixinAIBenchWorkflow implements Workflow {
   private liveBenchAPI: LiveBenchAPI;
@@ -21,17 +22,15 @@ export class WeixinAIBenchWorkflow implements Workflow {
 
   async generateCoverImage(title: string): Promise<string> {
     // 生成封面图并获取URL
-    const imageResult = await PDD920LogoGenerator.generate({
+    const imageGenerator = await ImageGeneratorFactory.getInstance().getGenerator("PDD920_LOGO");
+    const imageResult = await imageGenerator.generate({
       t: "@AISPACE科技空间",
       text: title,
       type: "json"
     });
 
     // 由于type为json，imageResult一定是包含url的对象
-    if (!Buffer.isBuffer(imageResult)) {
-      return imageResult.url;
-    }
-    throw new Error("生成封面图失败：未获取到图片URL");
+    return imageResult as string;
   }
 
   async process(): Promise<void> {

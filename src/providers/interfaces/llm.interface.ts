@@ -33,3 +33,19 @@ export interface LLMProvider {
         options?: ChatCompletionOptions
     ): Promise<any>;
 }
+
+/**
+ * LLM提供者类型
+ */
+export type LLMProviderType = "OPENAI" | "DEEPSEEK" | "XUNFEI" | "CUSTOM" | "QWEN";
+
+/**
+ * LLM提供者类型映射
+ */
+export interface LLMProviderTypeMap {
+    "OPENAI": import("../llm/openai-compatible-llm").OpenAICompatibleLLM;
+    "DEEPSEEK": import("../llm/openai-compatible-llm").OpenAICompatibleLLM;
+    "XUNFEI": import("../llm/xunfei-llm").XunfeiLLM;
+    "QWEN": import("../llm/openai-compatible-llm").OpenAICompatibleLLM;
+    "CUSTOM": import("../llm/openai-compatible-llm").OpenAICompatibleLLM;
+}

@@ -1,7 +1,7 @@
 
 import { RetryUtil } from '../../utils/retry.util';
 import { ScrapedContent } from '../interfaces/scraper.interface';
-import { LLMFactory, LLMProviderType } from '../../providers/llm/llm-factory';
+import { LLMFactory } from '../../providers/llm/llm-factory';
 import { ChatMessage } from '../../providers/interfaces/llm.interface';
 import { getSystemPrompt, getUserPrompt } from '@src/prompts/content-ranker.prompt';
 import { RankResult } from '../interfaces/content-ranker.interface';
