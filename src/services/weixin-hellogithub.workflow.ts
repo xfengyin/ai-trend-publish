@@ -1,5 +1,5 @@
 import { Workflow } from "./interfaces/workflow.interface";
-import { AliWanX21ImageGenerator } from "../providers/image-gen/aliwanx2.1.image";
+import { AliWanX21ImageGenerator } from "../providers/image-gen/aliyun/aliwanx2.1.image";
 import { HelloGithubScraper } from "@src/modules/scrapers/hellogithub.scraper";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { HelloGithubTemplateRenderer } from "@src/modules/render";

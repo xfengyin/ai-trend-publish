@@ -12,7 +12,7 @@ import { ArticleTemplateRenderer } from "@src/modules/render";
 import { FireCrawlScraper } from "@src/modules/scrapers/fireCrawl.scraper";
 import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
 import { AISummarizer } from "@src/modules/summarizer/ai.summarizer";
-import { AliWanX21ImageGenerator } from "@src/providers/image-gen/aliwanx2.1.image";
+import { AliWanX21ImageGenerator } from "@src/providers/image-gen/aliyun/aliwanx2.1.image";
 import cliProgress from "cli-progress";
 import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
 
@@ -228,9 +228,15 @@ export class WeixinWorkflow {
       console.log(`[标题生成] 生成标题: ${summaryTitle}`);
 
       // 生成封面图片
-      const imageGenerator = await ImageGeneratorFactory.getInstance().getGenerator("ALIWANX21");
-      const imageUrl = await imageGenerator.generate({ prompt: "AI新闻日报的封面", size: "1440*768" });
-      console.log(`[封面图片] 封面图片生成任务ID: ${imageUrl}`);
+      const imageGenerator = await ImageGeneratorFactory.getInstance().getGenerator("ALIWANX_POSTER");
+      const imageUrl = await imageGenerator.generate({
+        title: summaryTitle.split(" | ")[1].trim().slice(0, 30),
+        sub_title: new Date().toLocaleDateString() + " AI速递",
+        prompt_text_zh: `科技前沿资讯 | 人工智能新闻 | 每日AI快报 - ${summaryTitle.split(" | ")[1].trim().slice(0, 30)}`,
+        generate_mode: "generate",
+        generate_num: 1,
+        creative_title_layout: true,
+      });
 
       // 上传封面图片
       const mediaId = await this.publisher.uploadImage(imageUrl);

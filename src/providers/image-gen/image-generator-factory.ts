@@ -1,7 +1,8 @@
 import { ImageGenerator, ImageGeneratorType, ImageGeneratorTypeMap } from "../interfaces/image-gen.interface";
 import { TextLogoGenerator } from "./text-logo";
 import { PDD920LogoGenerator } from "./pdd920-logo";
-import { AliWanX21ImageGenerator } from "./aliwanx2.1.image";
+import { AliWanX21ImageGenerator } from "./aliyun/aliwanx2.1.image";
+import { AliyunWanxPosterGenerator } from "./aliyun/aliwanx-poster.image-generator";
 
 /**
  * 图片生成器工厂类
@@ -55,6 +56,9 @@ export class ImageGeneratorFactory {
                 break;
             case "ALIWANX21":
                 generator = new AliWanX21ImageGenerator();
+                break;
+            case "ALIWANX_POSTER":
+                generator = new AliyunWanxPosterGenerator();
                 break;
             default:
                 throw new Error(`不支持的图片生成器类型: ${type}`);

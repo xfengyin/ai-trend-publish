@@ -30,7 +30,7 @@ export interface ImageGenerator {
 /**
  * 图片生成器类型
  */
-export type ImageGeneratorType = "TEXT_LOGO" | "PDD920_LOGO" | "ALIWANX21";
+export type ImageGeneratorType = "TEXT_LOGO" | "PDD920_LOGO" | "ALIWANX21" | "ALIWANX_POSTER";
 
 /**
  * 图片生成器类型映射
@@ -38,5 +38,6 @@ export type ImageGeneratorType = "TEXT_LOGO" | "PDD920_LOGO" | "ALIWANX21";
 export interface ImageGeneratorTypeMap {
     "TEXT_LOGO": import("../image-gen/text-logo").TextLogoGenerator;
     "PDD920_LOGO": import("../image-gen/pdd920-logo").PDD920LogoGenerator;
-    "ALIWANX21": import("../image-gen/aliwanx2.1.image").AliWanX21ImageGenerator;
+    "ALIWANX21": import("../image-gen/aliyun/aliwanx2.1.image").AliWanX21ImageGenerator;
+    "ALIWANX_POSTER": import("../image-gen/aliyun/aliwanx-poster.image-generator").AliyunWanxPosterGenerator;
 }
