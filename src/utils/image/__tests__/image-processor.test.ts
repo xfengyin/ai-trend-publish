@@ -1,11 +1,11 @@
-import { ImageProcessor } from "../image-processor";
+import { WeixinImageProcessor } from "../image-processor";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { ConfigManager } from "@src/utils/config/config-manager";
 async function test() {
     const configManager = ConfigManager.getInstance();
     await configManager.initDefaultConfigSources();
     const weixinPublisher = new WeixinPublisher();
-    const imageProcessor = new ImageProcessor(weixinPublisher);
+    const imageProcessor = new WeixinImageProcessor(weixinPublisher);
     const content = `
         # 测试文章
         ![示例图片](https://oss.liuyaowen.cn/images/202503081200663.png)

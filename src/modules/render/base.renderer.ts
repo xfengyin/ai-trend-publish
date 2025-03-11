@@ -6,7 +6,7 @@ import fs from "fs";
 /**
  * 基础模板渲染器类
  */
-export abstract class BaseTemplateRenderer<T> {
+export abstract class BaseTemplateRenderer<T extends ejs.Data> {
     protected templates: { [key: string]: string } = {};
     protected configManager: ConfigManager;
     protected availableTemplates: string[] = [];
@@ -58,10 +58,18 @@ export abstract class BaseTemplateRenderer<T> {
      * @returns 渲染后的 HTML
      */
     public async render(
-        data: T extends ejs.Data ? T : ejs.Data,
-        templateType?: string
+        data: T,
+        preProcess?: (data: T) => Promise<T>,
+        templateType?: string,
+
     ): Promise<string> {
         try {
+
+            // 预处理
+            if (preProcess) {
+                data = await preProcess(data);
+            }
+
             let finalTemplateType: string;
 
             // 如果没有传templateType，从配置获取

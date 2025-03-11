@@ -13,7 +13,8 @@ interface ImageProcessResult {
     error?: string;
 }
 
-export class ImageProcessor {
+export class WeixinImageProcessor {
+    private static readonly MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
     private static readonly VALID_IMAGE_EXTENSIONS = [
         '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'
     ];
@@ -24,8 +25,11 @@ export class ImageProcessor {
         bbcode: /\[img\](.*?)\[\/img\]/g,
         plainUrl: /(https?:\/\/[^\s<>"]+?\/[^\s<>"]+?\.(jpg|jpeg|png|gif|webp|bmp|tiff))/gi
     };
+    private weixinPublisher: WeixinPublisher;
 
-    constructor(private weixinPublisher: WeixinPublisher) { }
+    constructor(weixinPublisher: WeixinPublisher) {
+        this.weixinPublisher = weixinPublisher;
+    }
 
     /**
      * 处理文章内容中的所有图片
@@ -56,7 +60,7 @@ export class ImageProcessor {
                 let uploadBuffer: Buffer | undefined;
 
                 // 检查图片大小并在需要时进行压缩
-                if (imageBuffer.byteLength > 1024 * 1024) {
+                if (imageBuffer.byteLength > WeixinImageProcessor.MAX_IMAGE_SIZE) {
                     console.log(`图片大小超过1MB (${(imageBuffer.byteLength / 1024 / 1024).toFixed(2)}MB)，进行压缩...`);
                     uploadBuffer = await this.compressImage(imageBuffer);
                     console.log(`压缩后大小: ${(uploadBuffer.length / 1024 / 1024).toFixed(2)}MB`);
@@ -87,6 +91,19 @@ export class ImageProcessor {
         };
     }
 
+    async processImageUrl(url: string): Promise<string> {
+        const validationResult = await this.validateImage(url);
+        if (!validationResult.isValid) {
+            throw new Error(validationResult.error);
+        }
+        const imageBuffer = await fetch(url).then(res => res.arrayBuffer());
+        let uploadBuffer: Buffer | undefined;
+        if (imageBuffer.byteLength > WeixinImageProcessor.MAX_IMAGE_SIZE) {
+            uploadBuffer = await this.compressImage(imageBuffer);
+        }
+        return this.weixinPublisher.uploadContentImage(url, uploadBuffer);
+    }
+
     /**
      * 从文章内容中提取所有图片URL
      * @param content 文章内容
@@ -96,25 +113,25 @@ export class ImageProcessor {
         const urls = new Set<string>();
 
         // 处理Markdown格式
-        content.replace(ImageProcessor.URL_PATTERNS.markdown, (_, __, url) => {
+        content.replace(WeixinImageProcessor.URL_PATTERNS.markdown, (_, __, url) => {
             urls.add(url);
             return '';
         });
 
         // 处理HTML格式
-        content.replace(ImageProcessor.URL_PATTERNS.html, (_, url) => {
+        content.replace(WeixinImageProcessor.URL_PATTERNS.html, (_, url) => {
             urls.add(url);
             return '';
         });
 
         // 处理BBCode格式
-        content.replace(ImageProcessor.URL_PATTERNS.bbcode, (_, url) => {
+        content.replace(WeixinImageProcessor.URL_PATTERNS.bbcode, (_, url) => {
             urls.add(url);
             return '';
         });
 
         // 处理纯URL格式
-        content.replace(ImageProcessor.URL_PATTERNS.plainUrl, (url) => {
+        content.replace(WeixinImageProcessor.URL_PATTERNS.plainUrl, (url) => {
             urls.add(url);
             return '';
         });
@@ -133,7 +150,7 @@ export class ImageProcessor {
             const urlObj = new URL(url);
             const extension = urlObj.pathname.toLowerCase().split('.').pop();
 
-            if (!extension || !ImageProcessor.VALID_IMAGE_EXTENSIONS.includes(`.${extension}`)) {
+            if (!extension || !WeixinImageProcessor.VALID_IMAGE_EXTENSIONS.includes(`.${extension}`)) {
                 return {
                     isValid: false,
                     error: '不支持的图片格式'

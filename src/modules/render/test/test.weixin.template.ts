@@ -5,8 +5,8 @@ import { WeixinTemplate } from "../interfaces/article.type";
 import { formatDate } from "@src/utils/common";
 import { ConfigManager } from "@src/utils/config/config-manager";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
-import { ArticleTemplateRenderer } from "../article.renderer";
-
+import { WeixinArticleTemplateRenderer } from "../article.renderer";
+import { WeixinImageProcessor } from "@src/utils/image/image-processor";
 // 生成示例HTML预览
 const previewArticles: WeixinTemplate[] = [
   {
@@ -16,6 +16,14 @@ const previewArticles: WeixinTemplate[] = [
     url: "https://example.com/gpt4-breakthrough",
     publishDate: formatDate(new Date().toISOString()),
     keywords: ["GPT-4", "人工智能", "多模态", "OpenAI"],
+    media: [{
+      url: "https://oss.liuyaowen.cn/images/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%912024-11-09%2010_13_12.png",
+      type: "image",
+      size: {
+        width: 100,
+        height: 100,
+      },
+    }],
     metadata: {
       author: "AI研究员",
       readTime: "5分钟",
@@ -28,6 +36,21 @@ const previewArticles: WeixinTemplate[] = [
     url: "https://example.com/gpt4-breakthrough",
     publishDate: formatDate(new Date().toISOString()),
     keywords: ["GPT-4", "人工智能", "多模态", "OpenAI"],
+    media: [{
+      url: "https://oss.liuyaowen.cn/images/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%912024-11-09%2010_13_12.png",
+      type: "image",
+      size: {
+        width: 100,
+        height: 100,
+      },
+    }, {
+      url: "https://oss.liuyaowen.cn/images/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%912024-11-09%2010_13_12.png",
+      type: "image",
+      size: {
+        width: 100,
+        height: 100,
+      },
+    }],
     metadata: {
       author: "AI研究员",
       readTime: "5分钟",
@@ -50,8 +73,19 @@ const previewArticles: WeixinTemplate[] = [
 
 // 渲染并保存预览文件
 async function renderAndSavePreview() {
-  const renderer = new ArticleTemplateRenderer();
-  const html = await renderer.render(previewArticles, "modern");
+  const configManager = ConfigManager.getInstance();
+  configManager.initDefaultConfigSources();
+  const weixinPublisher = new WeixinPublisher();
+  const renderer = new WeixinArticleTemplateRenderer();
+  const imageProcessor = new WeixinImageProcessor(weixinPublisher);
+  const html = await renderer.render(previewArticles, async (data) => {
+    for (const article of data) {
+      const { content, results } = await imageProcessor.processContent(article.content);
+      article.content = content;
+      console.log(results);
+    }
+    return data;
+  }, "default");
 
   // 确保temp目录存在
   const tempDir = path.join(__dirname, "../../../temp");
