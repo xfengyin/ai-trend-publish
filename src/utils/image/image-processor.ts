@@ -249,4 +249,74 @@ export class WeixinImageProcessor {
     private escapeRegExp(string: string): string {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
+
+    /**
+     * 处理EJS模板中的图片URL，将其转换为微信图片URL
+     * @param ejsContent EJS模板内容
+     * @returns 处理后的EJS内容和处理结果
+     */
+    async processEjsContent(ejsContent: string): Promise<{
+        content: string;
+        results: ImageProcessResult[];
+    }> {
+        // EJS图片标签的正则表达式
+        const ejsImagePattern = /<%[-=]?\s*['"](https?:\/\/[^'"]+\.(jpg|jpeg|png|gif|webp|bmp|tiff))['"]\s*%>/gi;
+
+        const imageUrls = new Set<string>();
+        ejsContent.replace(ejsImagePattern, (match, url) => {
+            imageUrls.add(url);
+            return match;
+        });
+
+        const results: ImageProcessResult[] = [];
+        let processedContent = ejsContent;
+
+        for (const imageUrl of imageUrls) {
+            try {
+                const validationResult = await this.validateImage(imageUrl);
+                if (!validationResult.isValid) {
+                    results.push({
+                        originalUrl: imageUrl,
+                        error: validationResult.error
+                    });
+                    continue;
+                }
+
+                // 下载并处理图片
+                const imageBuffer = await fetch(imageUrl).then(res => res.arrayBuffer());
+                let uploadBuffer: Buffer | undefined;
+
+                if (imageBuffer.byteLength > WeixinImageProcessor.MAX_IMAGE_SIZE) {
+                    console.log(`图片大小超过1MB (${(imageBuffer.byteLength / 1024 / 1024).toFixed(2)}MB)，进行压缩...`);
+                    uploadBuffer = await this.compressImage(imageBuffer);
+                    console.log(`压缩后大小: ${(uploadBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+                }
+
+                // 上传图片到微信
+                const newUrl = await this.weixinPublisher.uploadContentImage(imageUrl, uploadBuffer);
+                results.push({
+                    originalUrl: imageUrl,
+                    newUrl
+                });
+
+                // 替换EJS模板中的图片URL
+                processedContent = processedContent.replace(
+                    new RegExp(`(<%[-=]?\\s*['"])${this.escapeRegExp(imageUrl)}(['"]\\s*%>)`, 'g'),
+                    `$1${newUrl}$2`
+                );
+
+            } catch (error) {
+                console.error(`处理EJS模板中的图片失败: ${imageUrl}`, error);
+                results.push({
+                    originalUrl: imageUrl,
+                    error: error instanceof Error ? error.message : '未知错误'
+                });
+            }
+        }
+
+        return {
+            content: processedContent,
+            results
+        };
+    }
 } 

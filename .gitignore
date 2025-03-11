@@ -7,3 +7,4 @@ dist
 output
 temp
 .cursor
+*.bak

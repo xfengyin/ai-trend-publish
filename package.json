@@ -6,7 +6,8 @@
     "start": "nodemon -r tsconfig-paths/register src/index.ts",
     "build": "tsc && tsc-alias && npm run copy-templates",
     "test": "nodemon -r tsconfig-paths/register src/test.ts --loglevel=debug",
-    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist"
+    "copy-templates": "copyfiles -u 1 \"src/templates/**/*\" dist",
+    "weixin-conversion": "ts-node -r tsconfig-paths/register src/templates/WeixinConversion.ts"
   },
   "author": "",
   "license": "ISC",
