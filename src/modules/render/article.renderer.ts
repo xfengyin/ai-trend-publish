@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { BaseTemplateRenderer } from "./base.renderer";
-import { WeixinTemplate } from "./interfaces/template.type";
+import { WeixinTemplate } from "./interfaces/article.type";
 
 /**
  * 文章模板渲染器

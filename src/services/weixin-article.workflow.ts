@@ -7,7 +7,7 @@ import { ContentScraper, ScrapedContent } from "@src/modules/interfaces/scraper.
 import { ContentSummarizer } from "@src/modules/interfaces/summarizer.interface";
 import { BarkNotifier } from "@src/modules/notify/bark.notify";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
-import { WeixinTemplate } from "@src/modules/render/interfaces/template.type";
+import { WeixinTemplate } from "@src/modules/render/interfaces/article.type";
 import { ArticleTemplateRenderer } from "@src/modules/render";
 import { FireCrawlScraper } from "@src/modules/scrapers/fireCrawl.scraper";
 import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
@@ -53,6 +53,7 @@ export class WeixinWorkflow {
     try {
       console.log(`[${type}] 抓取: ${source.identifier}`);
       const contents = await scraper.scrape(source.identifier);
+
       this.stats.success++;
       return contents;
     } catch (error) {
@@ -214,6 +215,7 @@ export class WeixinWorkflow {
         publishDate: content.publishDate,
         metadata: content.metadata,
         keywords: content.metadata.keywords,
+        media: content.media,
       }));
 
       // 将所有标题总结成一个标题，然后让AI生成一个最具有吸引力的标题

@@ -170,6 +170,61 @@ export class WeixinPublisher implements ContentPublisher {
   }
 
   /**
+   * 上传图文消息内的图片获取URL
+   * @param imageUrl 图片URL
+   * @returns 图片URL
+   * @description 本接口所上传的图片不占用公众号的素材库中图片数量的限制
+   * 图片仅支持jpg/png格式，大小必须在1MB以下
+   */
+  async uploadContentImage(imageUrl: string, imageBuffer?: Buffer): Promise<string> {
+    if (!imageUrl) {
+      throw new Error('图片URL不能为空');
+    }
+
+    const token = await this.ensureAccessToken();
+    const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${token}`;
+
+    try {
+      // 创建FormData并添加图片数据
+      const formData = new FormData();
+
+      if (imageBuffer) {
+        // 如果提供了压缩后的图片buffer，直接使用
+        formData.append(
+          "media",
+          new Blob([imageBuffer], { type: "image/jpeg" }),
+          `image_${Math.random().toString(36).substring(2, 8)}.jpg`
+        );
+      } else {
+        // 否则下载原图
+        const buffer = await fetch(imageUrl).then(res => res.arrayBuffer());
+        formData.append(
+          "media",
+          new Blob([buffer], { type: "image/jpeg" }),
+          `image_${Math.random().toString(36).substring(2, 8)}.jpg`
+        );
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: "*/*",
+        }
+      }).then(res => res.json());
+
+      if (response.errcode) {
+        throw new Error(`上传图文消息图片失败: ${response.errmsg}`);
+      }
+
+      return response.url;
+    } catch (error) {
+      console.error("上传微信图文消息图片失败:", error);
+      throw error;
+    }
+  }
+
+  /**
    * 发布文章到微信
    * @param article 文章内容
    * @param title 文章标题
