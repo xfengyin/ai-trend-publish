@@ -87,6 +87,8 @@ export class TwitterScraper implements ContentScraper {
         console.log(`No tweets found for ${username}`);
       }
 
+      console.debug("scrapedContent", JSON.stringify(scrapedContent, null, 2));
+
       return scrapedContent;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);

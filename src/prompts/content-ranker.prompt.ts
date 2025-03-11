@@ -5,13 +5,13 @@ export function getSystemPrompt(): string {
   
           评分标准（总分100分）：
   
-          1. 技术创新与突破性 (40分)
+          1. 技术创新与突破性 (20分)
           - 是否涉及全新的AI产品、工具或技术突破
           - 技术的创新程度和颠覆潜力
           - 解决方案的独特性和技术壁垒
           - 与现有技术相比的进步幅度
   
-          2. 实用价值与应用场景 (25分)
+          2. 实用价值与应用场景 (45分)
           - 技术的实际应用价值和落地可能性
           - 解决实际问题的效果和效率提升
           - 用户体验的改善程度
@@ -37,6 +37,7 @@ export function getSystemPrompt(): string {
           - AI硬件加速技术的进展
           - AI在垂直行业的创新应用
           - 开源AI项目和社区动态
+          - 如果文章中包含图片，则权重增加10分
   
           相似内容处理：
           - 识别主题、技术点或事件相同的文章
@@ -64,6 +65,7 @@ export function getUserPrompt(contents: ScrapedContent[]): string {
         `标题: ${content.title}\n` +
         `发布时间: ${content.publishDate}\n` +
         `内容:\n${content.content}\n` +
+        `图像: ${content.media?.map(m => m.url).join(', ')}\n` +
         `---\n`
     )).join('\n');
 }

@@ -8,23 +8,26 @@ import { ContentSummarizer } from "@src/modules/interfaces/summarizer.interface"
 import { BarkNotifier } from "@src/modules/notify/bark.notify";
 import { WeixinPublisher } from "@src/modules/publishers/weixin.publisher";
 import { WeixinTemplate } from "@src/modules/render/interfaces/article.type";
-import { ArticleTemplateRenderer } from "@src/modules/render";
+import { WeixinArticleTemplateRenderer } from "@src/modules/render";
 import { FireCrawlScraper } from "@src/modules/scrapers/fireCrawl.scraper";
 import { TwitterScraper } from "@src/modules/scrapers/twitter.scraper";
 import { AISummarizer } from "@src/modules/summarizer/ai.summarizer";
 import { AliWanX21ImageGenerator } from "@src/providers/image-gen/aliyun/aliwanx2.1.image";
 import cliProgress from "cli-progress";
 import { ImageGeneratorFactory } from "@src/providers/image-gen/image-generator-factory";
+import { WeixinImageProcessor } from "@src/utils/image/image-processor";
+import { log } from "console";
+import { ConfigManager } from "@src/utils/config/config-manager";
 
 export class WeixinWorkflow {
   private scraper: Map<string, ContentScraper>;
   private summarizer: ContentSummarizer;
   private publisher: ContentPublisher;
   private notifier: BarkNotifier;
-  private renderer: ArticleTemplateRenderer;
-  private imageGenerator: AliWanX21ImageGenerator;
+  private renderer: WeixinArticleTemplateRenderer;
   private deepSeekClient: DeepseekAPI;
   private contentRanker: ContentRanker;
+  private imageProcessor: WeixinImageProcessor;
   private stats = {
     success: 0,
     failed: 0,
@@ -38,10 +41,10 @@ export class WeixinWorkflow {
     this.summarizer = new AISummarizer();
     this.publisher = new WeixinPublisher();
     this.notifier = new BarkNotifier();
-    this.renderer = new ArticleTemplateRenderer();
-    this.imageGenerator = new AliWanX21ImageGenerator();
+    this.renderer = new WeixinArticleTemplateRenderer();
     this.deepSeekClient = new DeepseekAPI();
     this.contentRanker = new ContentRanker();
+    this.imageProcessor = new WeixinImageProcessor(this.publisher as WeixinPublisher);
   }
 
 
@@ -115,7 +118,7 @@ export class WeixinWorkflow {
       let currentProgress = 0;
 
       // 2. 抓取内容
-      const allContents: ScrapedContent[] = [];
+      let allContents: ScrapedContent[] = [];
 
       // FireCrawl sources
       const fireCrawlScraper = this.scraper.get("fireCrawl");
@@ -165,24 +168,30 @@ export class WeixinWorkflow {
         await this.notifier.error("内容排序失败", "请检查API额度");
       }
 
-      // 分数更新
-      console.log(`[分数更新] 开始更新 ${allContents.length} 条内容`);
+      // 分数更新和过滤
+      console.log(`[分数更新] 开始更新和过滤内容`);
       if (rankedContents.length > 0) {
-        for (const content of allContents) {
+        // 只保留有分数的内容
+        allContents = allContents.filter(content => {
           const rankedContent = rankedContents.find(
             (ranked) => ranked.id === content.id
           );
           if (rankedContent) {
             content.score = rankedContent.score;
+            return true;
           }
-        }
+          return false;
+        });
+        console.log(`[过滤结果] 剩余 ${allContents.length} 条有分数的内容`);
+      } else {
+        console.log("[警告] 没有任何内容被评分");
       }
 
       // 按照score排序
       allContents.sort((a, b) => b.score - a.score);
 
-      // 只取前10条内容进行处理
-      const topContents = allContents.slice(0, 10);
+      // 只取前ARTICLE_NUM条内容进行处理
+      const topContents = allContents.slice(0, await ConfigManager.getInstance().get("ARTICLE_NUM"));
 
       // 4. 内容处理 (只处理排序后的前10条)
       console.log(`\n[内容处理] 处理排序后的前 ${topContents.length} 条内容`);
@@ -218,6 +227,8 @@ export class WeixinWorkflow {
         media: content.media,
       }));
 
+      console.debug("templateData", JSON.stringify(templateData, null, 2));
+
       // 将所有标题总结成一个标题，然后让AI生成一个最具有吸引力的标题
       const summaryTitle = await this.summarizer.generateTitle(
         allContents.map((content) => content.title).join(" | ")
@@ -236,14 +247,21 @@ export class WeixinWorkflow {
         sub_title: new Date().toLocaleDateString() + " AI速递",
         prompt_text_zh: `科技前沿资讯 | 人工智能新闻 | 每日AI快报 - ${summaryTitle.split(" | ")[1].trim().slice(0, 30)}`,
         generate_mode: "generate",
-        generate_num: 1,
-        creative_title_layout: true,
+        generate_num: 1
       });
 
       // 上传封面图片
       const mediaId = await this.publisher.uploadImage(imageUrl);
 
-      const renderedTemplate = await this.renderer.render(templateData);
+      const renderedTemplate = await this.renderer.render(templateData, async (data) => {
+        // 处理图片 上传图片到微信
+        for (const article of data) {
+          const { content, results } = await this.imageProcessor.processContent(article.content);
+          article.content = content;
+          console.log(results);
+        }
+        return data;
+      });
       console.log("[发布] 发布到微信公众号");
       const publishResult = await this.publisher.publish(
         renderedTemplate,
