@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
-import { ContentScraper, ScrapedContent, ScraperOptions } from "../interfaces/scraper.interface";
+import { ContentScraper, Media, ScrapedContent, ScraperOptions } from "../interfaces/scraper.interface";
 import { ConfigManager } from "@src/utils/config/config-manager";
 import { formatDate } from "@src/utils/common";
 
@@ -11,28 +11,20 @@ export class TwitterScraper implements ContentScraper {
   private xApiBearerToken: string | undefined;
 
   constructor() {
-    this.refresh();
   }
 
   async refresh(): Promise<void> {
-    await this.validateConfig();
     this.xApiBearerToken = await ConfigManager.getInstance().get(
       "X_API_BEARER_TOKEN"
     );
   }
 
-  async validateConfig(): Promise<void> {
-    if (!(await ConfigManager.getInstance().get("X_API_BEARER_TOKEN"))) {
-      throw new Error(
-        "X API Bearer Token is not set, please set X_API_BEARER_TOKEN in .env file"
-      );
-    }
-  }
 
   async scrape(
     sourceId: string,
     options?: ScraperOptions
   ): Promise<ScrapedContent[]> {
+    await this.refresh();
     const usernameMatch = sourceId.match(/x\.com\/([^\/]+)/);
     if (!usernameMatch) {
       throw new Error("Invalid Twitter source ID format");
@@ -47,6 +39,8 @@ export class TwitterScraper implements ContentScraper {
         query
       )}&queryType=Top`;
 
+      console.log(apiUrl);
+
       const response = await fetch(apiUrl, {
         headers: {
           "X-API-Key": `${this.xApiBearerToken}`,
@@ -60,19 +54,30 @@ export class TwitterScraper implements ContentScraper {
 
       const tweets = await response.json();
       const scrapedContent: ScrapedContent[] = tweets.tweets
-        .slice(0, 10)
-        .map((tweet: any) => ({
-          id: tweet.id,
-          title: tweet.text.split("\n")[0],
-          content: tweet.text,
-          url: `https://x.com/${username}/status/${tweet.id}`,
-          publishDate: formatDate(tweet.createdAt),
-          score: 0,
-          metadata: {
-            platform: "twitter",
-            username,
-          },
-        }));
+        .slice(0, 20)
+        .map((tweet: any) => {
+          const quotedContent = this.getQuotedContent(tweet.quoted_tweet);
+          let media = this.getMediaList(tweet.extendedEntities);
+          // 合并tweet和quotedContent 如果quotedContent存在，则将quotedContent的内容添加到tweet的内容中
+          const content = quotedContent ? `${tweet.text}\n\n 【QuotedContent:${quotedContent.content}】` : tweet.text;
+          // 合并media和quotedContent的media
+          if (quotedContent?.media) {
+            media = [...media, ...quotedContent.media];
+          }
+          return {
+            id: tweet.id,
+            title: tweet.text.split("\n")[0],
+            content: content,
+            url: tweet.url,
+            publishDate: formatDate(tweet.createdAt),
+            score: 0,
+            media: media,
+            metadata: {
+              platform: "twitter",
+              username,
+            },
+          };
+        });
 
       if (scrapedContent.length > 0) {
         console.log(
@@ -85,8 +90,44 @@ export class TwitterScraper implements ContentScraper {
       return scrapedContent;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(`Error fetching tweets for ${username}:`, error);
+      console.error(`Error fetching tweets for ${username}:`, errorMsg);
       throw error;
     }
+  }
+
+  private getMediaList(extendedEntities: any): Media[] {
+    const mediaList: Media[] = [];
+    if (extendedEntities && extendedEntities.media) {
+      extendedEntities.media.forEach((media: any) => {
+        mediaList.push({
+          url: media.media_url_https,
+          type: media.type,
+          size: {
+            width: media.sizes.large.w,
+            height: media.sizes.large.h,
+          },
+        });
+      });
+    }
+    return mediaList;
+  }
+
+
+  private getQuotedContent(quoted_tweet: any): ScrapedContent | null {
+    if (quoted_tweet) {
+      return {
+        id: quoted_tweet.id,
+        title: quoted_tweet.text.split("\n")[0],
+        content: quoted_tweet.text,
+        url: quoted_tweet.url,
+        publishDate: formatDate(quoted_tweet.createdAt),
+        score: 0,
+        media: this.getMediaList(quoted_tweet.extendedEntities),
+        metadata: {
+          platform: "twitter"
+        },
+      };
+    }
+    return null;
   }
 }
