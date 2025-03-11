@@ -1,4 +1,3 @@
-
 import { RetryUtil } from '../../utils/retry.util';
 import { ScrapedContent } from '../interfaces/scraper.interface';
 import { LLMFactory } from '../../providers/llm/llm-factory';
@@ -85,7 +84,10 @@ function parseRankingResult(result: string): RankResult[] {
       throw new Error(`Invalid score format for line: ${line}`);
     }
 
-    return { id, score };
+    // 清理ID末尾的冒号
+    const cleanedId = id.replace(/[:：]$/, '');
+
+    return { id: cleanedId, score };
   });
 }
 
