@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - '**.md'
+      - 'scripts/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.md'
+      - 'scripts/**'
+
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install markdownlint
+      run: npm install -g markdownlint-cli
+      
+    - name: Run markdownlint
+      run: |
+        markdownlint '**/*.md' --ignore node_modules --ignore '**/node_modules/**' || true
+        
+    - name: Check Front Matter
+      run: |
+        # 检查所有智能体文件是否包含必要的 Front Matter
+        errors=0
+        for file in $(find engineering design marketing product testing -name "*.md" 2>/dev/null); do
+          if ! head -1 "$file" | grep -q "^---$"; then
+            echo "❌ Missing Front Matter: $file"
+            errors=$((errors + 1))
+          fi
+          
+          # 检查必要的字段
+          if ! grep -q "^name:" "$file"; then
+            echo "❌ Missing 'name' field: $file"
+            errors=$((errors + 1))
+          fi
+          
+          if ! grep -q "^description:" "$file"; then
+            echo "❌ Missing 'description' field: $file"
+            errors=$((errors + 1))
+          fi
+        done
+        
+        if [ $errors -gt 0 ]; then
+          echo "Found $errors errors"
+          exit 1
+        fi
+        
+        echo "✅ All Front Matter checks passed"
+        
+  validate-links:
+    name: Validate Links
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check internal links
+      run: |
+        # 检查 README 中的内部链接
+        errors=0
+        while IFS= read -r link; do
+          # 提取相对路径
+          path=$(echo "$link" | sed -n 's/.*](\([^)]*\)).*/\1/p' | grep -v "^http" | grep -v "^#")
+          
+          if [ -n "$path" ]; then
+            # 移除锚点
+            clean_path=$(echo "$path" | sed 's/#.*//')
+            
+            if [ -n "$clean_path" ] && [ ! -f "$clean_path" ] && [ ! -d "$clean_path" ]; then
+              echo "❌ Broken link: $path"
+              errors=$((errors + 1))
+            fi
+          fi
+        done < <(grep -oE '\[([^]]+)\]\([^)]+\)' README.md)
+        
+        if [ $errors -gt 0 ]; then
+          echo "Found $errors broken links"
+          exit 1
+        fi
+        
+        echo "✅ All internal links are valid"
+        
+  shellcheck:
+    name: Shell Script Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run ShellCheck
+      run: |
+        if command -v shellcheck >/dev/null 2>&1; then
+          for script in scripts/*.sh; do
+            if [ -f "$script" ]; then
+              echo "Checking $script..."
+              shellcheck -S warning "$script" || true
+            fi
+          done
+        else
+          echo "ShellCheck not available, skipping"
+        fi
+        
+  count-agents:
+    name: Count Agents
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Count agents by category
+      run: |
+        echo "## 📊 Agent Statistics" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        total=0
+        for category in engineering design marketing product testing; do
+          if [ -d "$category" ]; then
+            count=$(find "$category" -name "*.md" -type f | wc -l)
+            total=$((total + count))
+            echo "- $category: $count agents" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Total: $total agents**" >> $GITHUB_STEP_SUMMARY
+        
+        echo "Total agents: $total"

@@ -1,0 +1,49 @@
+# AI 智能体模板库 - Pre-commit 配置
+# 安装: pip install pre-commit
+# 使用: pre-commit run --all-files
+
+repos:
+  # 基础检查
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # 检查并修复文件末尾空行
+      - id: end-of-file-fixer
+        exclude: '^.*\.md$'
+      
+      # 去除行尾空白
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      
+      # 检查 YAML 语法
+      - id: check-yaml
+      
+      # 检查 JSON 语法
+      - id: check-json
+      
+      # 检查合并冲突标记
+      - id: check-merge-conflict
+      
+      # 检查是否是可执行文件有 shebang
+      - id: check-executables-have-shebangs
+        files: '^scripts/.*\.sh$'
+      
+      # 检查 shebang 脚本是否可执行
+      - id: check-shebang-scripts-are-executable
+        files: '^scripts/.*\.sh$'
+
+  # Markdown 检查
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.json]
+        exclude: '^(AGENTS_INDEX\.md|\.github/)'
+
+  # Shell 脚本检查
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        files: '^scripts/.*\.sh$'
+        args: [-e, SC1091, -e, SC2002]

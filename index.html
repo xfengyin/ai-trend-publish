@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智能体模板库 - 一站式中文AI智能体模板库</title>
+    <meta name="description" content="一站式中文AI智能体模板库，支持Claude/Cursor/Aider，开箱即用">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        .tag {
+            transition: all 0.2s ease;
+        }
+        .tag:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-4 py-16">
+            <div class="text-center max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                    🤖 AI 智能体模板库
+                </h1>
+                <p class="text-xl md:text-2xl mb-6 text-blue-100">
+                    一站式中文AI智能体模板库
+                </p>
+                <p class="text-lg text-blue-200 mb-8">
+                    支持 Claude / Cursor / Aider，开箱即用
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://github.com/xfengyin/ai-trend-publish" 
+                       class="bg-white text-indigo-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition">
+                        📥 GitHub 仓库
+                    </a>
+                    <a href="#agents" 
+                       class="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-indigo-600 transition">
+                        🔍 浏览智能体
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-wrap justify-center gap-8 text-center">
+                <div>
+                    <span class="text-2xl font-bold text-indigo-600">15+</span>
+                    <p class="text-gray-600 text-sm">智能体</p>
+                </div>
+                <div>
+                    <span class="text-2xl font-bold text-indigo-600">5</span>
+                    <p class="text-gray-600 text-sm">分类</p>
+                </div>
+                <div>
+                    <span class="text-2xl font-bold text-indigo-600">3+</span>
+                    <p class="text-gray-600 text-sm">支持工具</p>
+                </div>
+                <div>
+                    <span class="text-2xl font-bold text-indigo-600">MIT</span>
+                    <p class="text-gray-600 text-sm">开源协议</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <section class="container mx-auto px-4 py-12" id="agents">
+        <div class="max-w-2xl mx-auto">
+            <div class="relative">
+                <input type="text" 
+                       id="searchInput"
+                       placeholder="搜索智能体..." 
+                       class="search-input w-full px-6 py-4 text-lg border border-gray-300 rounded-full focus:border-indigo-500">
+                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    🔍
+                </span>
+            </div>
+            
+            <!-- Filters -->
+            <div class="flex flex-wrap justify-center gap-2 mt-6">
+                <button class="filter-btn active px-4 py-2 rounded-full bg-indigo-600 text-white text-sm" data-filter="all">
+                    全部
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300" data-filter="engineering">
+                    💻 工程开发
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300" data-filter="design">
+                    🎨 设计创意
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300" data-filter="marketing">
+                    📈 营销增长
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300" data-filter="product">
+                    📦 产品管理
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300" data-filter="testing">
+                    🧪 测试质量
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agents Grid -->
+    <section class="container mx-auto px-4 py-8 pb-20">
+        <div id="agentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Agent cards will be populated by JavaScript -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2">AI 智能体模板库</h3>
+                    <p class="text-gray-400">为中文开发者打造的 AI 智能体资源库</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="https://github.com/xfengyin/ai-trend-publish" 
+                       class="text-gray-400 hover:text-white transition">GitHub</a>
+                    <a href="./README.md" 
+                       class="text-gray-400 hover:text-white transition">文档</a>
+                    <a href="./CONTRIBUTING.md" 
+                       class="text-gray-400 hover:text-white transition">贡献</a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
+                <p>MIT License - 开源免费使用</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Agent data - 这个列表需要根据实际文件更新
+        const agents = [
+            {
+                name: "前端开发专家",
+                category: "engineering",
+                categoryName: "💻 工程开发",
+                description: "React/Vue/Angular 界面实现、性能优化专家",
+                color: "#3178c6",
+                difficulty: "中级",
+                file: "engineering/engineering-frontend-developer.md"
+            },
+            {
+                name: "后端架构师",
+                category: "engineering",
+                categoryName: "💻 工程开发",
+                description: "API设计、数据库架构、可扩展性专家",
+                color: "#6c757d",
+                difficulty: "高级",
+                file: "engineering/engineering-backend-architect.md"
+            },
+            {
+                name: "DeepSeek适配工程师",
+                category: "engineering",
+                categoryName: "💻 工程开发",
+                description: "DeepSeek大模型集成、微调、Prompt优化专家",
+                color: "#4D6BFA",
+                difficulty: "中级",
+                file: "engineering/engineering-deepseek-adapter.md"
+            },
+            {
+                name: "飞书集成开发者",
+                category: "engineering",
+                categoryName: "💻 工程开发",
+                description: "飞书开放平台、机器人、工作流开发专家",
+                color: "#3370ff",
+                difficulty: "中级",
+                file: "engineering/engineering-feishu-integration-developer.md"
+            },
+            {
+                name: "品牌守护者",
+                category: "design",
+                categoryName: "🎨 设计创意",
+                description: "品牌一致性、视觉规范专家",
+                color: "#ff6b6b",
+                difficulty: "初级",
+                file: "design/design-brand-guardian.md"
+            },
+            {
+                name: "微信公众号运营",
+                category: "marketing",
+                categoryName: "📈 营销增长",
+                description: "公众号内容策划、排版优化、涨粉策略专家",
+                color: "#07C160",
+                difficulty: "初级",
+                file: "marketing/marketing-wechat-operator.md"
+            },
+            {
+                name: "抖音内容创作者",
+                category: "marketing",
+                categoryName: "📈 营销增长",
+                description: "短视频脚本创作、热点追踪、运营策略专家",
+                color: "#000000",
+                difficulty: "中级",
+                file: "marketing/marketing-douyin-creator.md"
+            },
+            {
+                name: "SEO 内容专家",
+                category: "marketing",
+                categoryName: "📈 营销增长",
+                description: "SEO优化、内容策略、关键词研究专家",
+                color: "#2ed573",
+                difficulty: "中级",
+                file: "marketing/marketing-seo-content-writer.md"
+            },
+            {
+                name: "产品经理",
+                category: "product",
+                categoryName: "📦 产品管理",
+                description: "产品规划、用户需求、路线图专家",
+                color: "#ffa502",
+                difficulty: "中级",
+                file: "product/product-product-manager.md"
+            },
+            {
+                name: "钉钉集成产品专家",
+                category: "product",
+                categoryName: "📦 产品管理",
+                description: "钉钉开放平台产品设计与生态集成专家",
+                color: "#1677FF",
+                difficulty: "中级",
+                file: "product/product-dingtalk-integration.md"
+            },
+            {
+                name: "自动化测试工程师",
+                category: "testing",
+                categoryName: "🧪 测试质量",
+                description: "测试自动化、CI集成专家",
+                color: "#a55eea",
+                difficulty: "中级",
+                file: "testing/testing-automation-engineer.md"
+            }
+        ];
+
+        // Difficulty colors
+        const difficultyColors = {
+            '初级': 'bg-green-100 text-green-800',
+            '中级': 'bg-yellow-100 text-yellow-800',
+            '高级': 'bg-red-100 text-red-800'
+        };
+
+        // Render agents
+        function renderAgents(filter = 'all', search = '') {
+            const grid = document.getElementById('agentsGrid');
+            grid.innerHTML = '';
+
+            const filtered = agents.filter(agent => {
+                const matchesCategory = filter === 'all' || agent.category === filter;
+                const matchesSearch = search === '' || 
+                    agent.name.toLowerCase().includes(search.toLowerCase()) ||
+                    agent.description.toLowerCase().includes(search.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <p class="text-xl">😕 未找到匹配的智能体</p>
+                        <p>试试其他关键词或分类</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'card-hover bg-white rounded-xl shadow-md overflow-hidden border border-gray-100';
+                card.innerHTML = `
+                    <div class="h-2" style="background-color: ${agent.color}"></div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-medium text-gray-500">${agent.categoryName}</span>
+                            <span class="tag px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[agent.difficulty]}">
+                                ${agent.difficulty}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">${agent.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${agent.description}</p>
+                        <a href="${agent.file}" 
+                           class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                            查看详情 
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white');
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                this.classList.remove('bg-gray-200', 'text-gray-700');
+                this.classList.add('bg-indigo-600', 'text-white');
+                
+                const filter = this.dataset.filter;
+                const search = document.getElementById('searchInput').value;
+                renderAgents(filter, search);
+            });
+        });
+
+        // Search input
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const activeFilter = document.querySelector('.filter-btn.bg-indigo-600').dataset.filter;
+            renderAgents(activeFilter, this.value);
+        });
+
+        // Initial render
+        renderAgents();
+    </script>
+</body>
+</html>

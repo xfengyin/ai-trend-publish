@@ -1,0 +1,65 @@
+# Jekyll 配置 for GitHub Pages
+# 更多配置选项: https://jekyllrb.com/docs/configuration/
+
+# 网站基础信息
+title: "AI 智能体模板库"
+description: "一站式中文AI智能体模板库，支持Claude/Cursor/Aider，开箱即用"
+url: "https://xfengyin.github.io"
+baseurl: "/ai-trend-publish"
+
+# 作者信息
+author:
+  name: "AI 智能体模板库团队"
+  email: ""
+
+# 构建设置
+markdown: kramdown
+highlighter: rouge
+theme: minima
+
+# 插件
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# 排除文件
+exclude:
+  - scripts/
+  - .github/
+  - .gitignore
+  - LICENSE
+  - README.md.bak
+  - "*.gemspec"
+
+# 默认设置
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+# 导航链接
+header_pages:
+  - index.html
+  - AGENTS_INDEX.md
+
+# 社交链接
+social:
+  github: xfengyin
+
+# 搜索设置
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+  preview_words_before: 3
+  preview_words_after: 3
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false

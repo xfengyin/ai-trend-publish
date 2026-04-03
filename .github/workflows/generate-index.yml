@@ -1,0 +1,116 @@
+name: Generate Index
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.md'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate Agent Index
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Generate index
+      run: |
+        cat > AGENTS_INDEX.md << 'EOF'
+        # 🤖 智能体索引
+
+        > 自动生成所有可用智能体的索引
+
+        ## 📈 统计
+
+        EOF
+        
+        total=0
+        for category in engineering design marketing product testing; do
+          if [ -d "$category" ]; then
+            count=$(find "$category" -name "*.md" -type f | wc -l)
+            total=$((total + count))
+            echo "- **$(echo $category | sed 's/.*/\u&/')**: $count 个智能体" >> AGENTS_INDEX.md
+          fi
+        done
+        
+        echo "" >> AGENTS_INDEX.md
+        echo "**总计: $total 个智能体**" >> AGENTS_INDEX.md
+        echo "" >> AGENTS_INDEX.md
+        
+        # 生成详细列表
+        echo "## 📚 智能体列表" >> AGENTS_INDEX.md
+        echo "" >> AGENTS_INDEX.md
+        
+        for category in engineering design marketing product testing; do
+          if [ -d "$category" ]; then
+            # 获取分类名称
+            case $category in
+              engineering) cat_name="💻 工程开发部" ;;
+              design) cat_name="🎨 设计创意部" ;;
+              marketing) cat_name="📈 营销增长部" ;;
+              product) cat_name="📦 产品管理部" ;;
+              testing) cat_name="🧪 测试质量部" ;;
+            esac
+            
+            echo "### $cat_name" >> AGENTS_INDEX.md
+            echo "" >> AGENTS_INDEX.md
+            echo "| 智能体 | 描述 | 难度 |" >> AGENTS_INDEX.md
+            echo "|--------|------|------|" >> AGENTS_INDEX.md
+            
+            for file in "$category"/*.md; do
+              if [ -f "$file" ]; then
+                name=$(grep "^name:" "$file" | sed 's/name: //' | head -1)
+                desc=$(grep "^description:" "$file" | sed 's/description: //' | head -1)
+                filename=$(basename "$file")
+                
+                # 默认难度
+                difficulty="🟡 中级"
+                if grep -q "difficulty: 初级" "$file" 2>/dev/null; then
+                  difficulty="🟢 初级"
+                elif grep -q "difficulty: 高级" "$file" 2>/dev/null; then
+                  difficulty="🔴 高级"
+                fi
+                
+                echo "| [$name]($file) | $desc | $difficulty |" >> AGENTS_INDEX.md
+              fi
+            done
+            
+            echo "" >> AGENTS_INDEX.md
+          fi
+        done
+        
+        # 添加页脚
+        cat >> AGENTS_INDEX.md << 'EOF'
+        ---
+
+        > 🔄 此文件由 GitHub Actions 自动生成
+        > 最后更新: 
+        EOF
+        date '+%Y-%m-%d %H:%M:%S' >> AGENTS_INDEX.md
+        
+        echo "Index generated successfully"
+        
+    - name: Check for changes
+      id: check
+      run: |
+        if git diff --quiet AGENTS_INDEX.md 2>/dev/null; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push
+      if: steps.check.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add AGENTS_INDEX.md
+        git commit -m "🤖 Auto-generate agent index [skip ci]"
+        git push
